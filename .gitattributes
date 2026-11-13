@@ -1,0 +1,10 @@
+# Repo-wide: normalize all text files to LF
+* text=auto eol=lf
+
+# PowerShell scripts need CRLF to run reliably on Windows
+*.ps1 text eol=crlf
+
+# Binary assets — never touch
+*.png binary
+*.ico binary
+*.db binary

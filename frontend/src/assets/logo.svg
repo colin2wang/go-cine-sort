@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Cine Sort">
+  <title>Cine Sort - 电影整理工作台</title>
+  <!-- oksvg 不渲染 rect@rx，所有圆角均用 path 圆弧绘制 -->
+  <path d="M124 16 H388 A108 108 0 0 1 496 124 V388 A108 108 0 0 1 388 496 H124 A108 108 0 0 1 16 388 V124 A108 108 0 0 1 124 16 Z" fill="#141B2D"/>
+  <path d="M124 16 H388 A108 108 0 0 1 496 124 V388 A108 108 0 0 1 388 496 H124 A108 108 0 0 1 16 388 V124 A108 108 0 0 1 124 16 Z" fill="none" stroke="#F5B841" stroke-width="10" opacity="0.45"/>
+  <circle cx="256" cy="212" r="134" fill="#1C2438" stroke="#F5B841" stroke-width="24"/>
+  <circle cx="256" cy="212" r="98" fill="none" stroke="#38BDF8" stroke-width="5" opacity="0.4"/>
+  <circle cx="256" cy="146" r="23" fill="#0B0F1A"/>
+  <circle cx="319" cy="191" r="23" fill="#0B0F1A"/>
+  <circle cx="295" cy="266" r="23" fill="#0B0F1A"/>
+  <circle cx="217" cy="266" r="23" fill="#0B0F1A"/>
+  <circle cx="193" cy="191" r="23" fill="#0B0F1A"/>
+  <path d="M238 180 L238 244 L292 212 Z" fill="#F5B841"/>
+  <path d="M142 374 H370 A10 10 0 0 1 380 384 A10 10 0 0 1 370 394 H142 A10 10 0 0 1 132 384 A10 10 0 0 1 142 374 Z" fill="#F5B841"/>
+  <path d="M142 406 H308 A10 10 0 0 1 318 416 A10 10 0 0 1 308 426 H142 A10 10 0 0 1 132 416 A10 10 0 0 1 142 406 Z" fill="#E8A317" opacity="0.85"/>
+  <path d="M142 438 H246 A10 10 0 0 1 256 448 A10 10 0 0 1 246 458 H142 A10 10 0 0 1 132 448 A10 10 0 0 1 142 438 Z" fill="#F5B841" opacity="0.6"/>
+  <circle cx="404" cy="384" r="10" fill="#38BDF8"/>
+  <circle cx="342" cy="416" r="10" fill="#38BDF8" opacity="0.75"/>
+  <circle cx="280" cy="448" r="10" fill="#38BDF8" opacity="0.5"/>
+</svg>

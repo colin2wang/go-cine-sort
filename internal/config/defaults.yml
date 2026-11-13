@@ -1,0 +1,47 @@
+# 扫描器默认清洗规则（源自 python_cine_sort/config/movie_file_util.yml）
+# 说明：Go 使用 RE2，\b 只识别 ASCII 单词边界、\w 只匹配 ASCII 字符。
+# 涉及中文片段的规则已改写为 Unicode 友好的等价形式，清洗效果与原实现一致或更彻底。
+
+extensions:
+  - .mkv
+  - .mp4
+  - .avi
+  - .mov
+  - .wmv
+  - .flv
+  - .webm
+
+cleanup_patterns:
+  - '\[.*?\]'
+  - '\(.*?\)'
+  - '(?:阳光电影|最新电影|电影天堂|电影港|迅雷下载|磁力链接|YYeTs|韩剧精灵)(?:[a-zA-Z0-9.-]*\.[a-zA-Z]{2,})?'
+  - 'dygod\.org'
+  - 'www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+  - '[a-zA-Z0-9.-]+\.(?:com|net|org|cn|cc)\b'
+  - '\d+[pPkK]\b'
+  - '\d+[xX]\d+\b'
+  - '\b(?:4|8)[Kk]\b'
+  - '\b(?:HD|BD|DVD|WEBRIP|BLURAY|BDRIP|HDRIP|CAM|R5|TS|TC|SCR|HQ|HQCD|HR-HDTV)\b'
+  - '\b(?:HD|BD|DVD|WEBRIP|BLURAY|BDRIP|HDRIP|CAM|R5|TS|TC|SCR|HQ|HQCD)\d+[pPkK]\b'
+  - '\b\d+[pPkK](?:HD|BD|DVD|WEBRIP|BLURAY|BDRIP|HDRIP|CAM|R5|TS|TC|SCR|HQ|HQCD)\b'
+  # 年份不在这里删除：由 scanner 第 3 步按 Unicode 词边界判断，
+  # 避免误删片名中的数字（例如「我的1919」）。
+  - '\b(?:MP4|MKV|AVI|MOV|WMV|FLV|WEBM)\b'
+  - '\b(?:AAC|AC3|DTS|FLAC|WAV)\b'
+  - '\bDDP?\d\.\d\b'
+  - '\bDolby\b|杜比|环绕声'
+  - '\b(?:HDR|HDR10|Dolby\s+Vision)\b'
+  - '\b(?:YJYS|BDYS|JYYS|DYYS|YYDS|人人影视制作)\b'
+  - '^[.\-_]+'
+  - '[.\-_]+$'
+
+tech_patterns:
+  - '\b(?:XVID|DIVX|H264|H\.264|H265|H\.265|HEVC|AVC|VP9|X264)\b'
+
+language_patterns:
+  # 含语种/音轨/字幕/版本关键词的连续片段（RE2 下替代 Python \b...\b）
+  - '[^\s/\[\]()]*?(?:国语|粤语|台配|日语|韩语|英语|法语|德语|俄语|西班牙语|泰语|菲律宾语|他加禄语|音轨)[^\s/\[\]()]*'
+  - '[^\s/\[\]()]*?(?:中字|中英双字|双语|字幕)[^\s/\[\]()]*'
+  - '[^\s/\[\]()]*?(?:无水印|完整版|高清版|修复版|导演版|加长版)[^\s/\[\]()]*'
+  - '\b[a-zA-Z0-9_]*(?:Filipino|Tagalog|English|Chinese)[a-zA-Z0-9_]*\b'
+  - '\b[a-zA-Z0-9_]*(?:CHS|ENG)(?:\s*[-\s]\s*(?:CHS|ENG))?[a-zA-Z0-9_]*\b'
