@@ -1,7 +1,5 @@
 # Cine Sort · Movie Organizer
 
-![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white) ![Wails](https://img.shields.io/badge/Wails-v2-DF2835?logo=wails&logoColor=white) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vuedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
-
 ![Wails](https://img.shields.io/badge/Wails-v2-red?logo=wails&logoColor=white) ![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vuedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-1.62-003B57?logo=sqlite&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white) ![pnpm](https://img.shields.io/badge/pnpm-12.18-F69220?logo=pnpm&logoColor=white)
 
 Cine Sort is a desktop movie library organizer. Pick a movie folder and the app automatically detects video files, fetches film metadata online, generates a normalized directory layout with metadata files, downloads official posters, records everything in a SQLite history database, and optionally archives the source videos into the organized directory.
