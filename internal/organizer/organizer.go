@@ -68,11 +68,25 @@ func (o *Organizer) RenderDirectoryName(chinese, english, year string) string {
 	return strings.TrimRight(reMultiDots.ReplaceAllString(name, "."), ".")
 }
 
+// baseDir resolves the organizing base directory. A configured MovieFolder
+// that exists wins; an empty or missing MovieFolder falls back to
+// exeDir/downloads (created on demand), keeping the portable layout.
 func (o *Organizer) baseDir() (string, error) {
-	if strings.TrimSpace(o.cfg.MovieFolder) == "" {
-		return "", fmt.Errorf("未配置电影目录，请先在「设置」中选择目录")
+	folder := strings.TrimSpace(o.cfg.MovieFolder)
+	if folder != "" {
+		if _, err := os.Stat(folder); err == nil {
+			return folder, nil
+		}
+		o.log.Warn("organizer", "电影目录不可用，回退到可执行文件目录下的 downloads: %s", folder)
 	}
-	return o.cfg.MovieFolder, nil
+	fallback, err := config.FallbackDir()
+	if err != nil {
+		return "", fmt.Errorf("解析兜底目录失败: %w", err)
+	}
+	if err := os.MkdirAll(fallback, 0o755); err != nil {
+		return "", fmt.Errorf("创建兜底目录失败 %s: %w", fallback, err)
+	}
+	return fallback, nil
 }
 
 func (o *Organizer) writeFile(path, content string) error {

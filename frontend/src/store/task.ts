@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { api, onItemResult, onLog, onProgress, onTaskDone, onTaskError } from '@/api'
 import type { LogEntry, LogLevel, ProcessResult, TaskProgress, TaskSummary } from '@/types'
 
@@ -6,6 +6,9 @@ const MAX_LOGS = 600
 
 /** 日志级别从低到高，供显示过滤使用。 */
 export const LOG_LEVELS: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR']
+
+/** 日志面板是否折叠（折叠时面板隐藏，展开按钮在状态栏）。 */
+export const logPanelCollapsed = ref(false)
 
 const emptyProgress = (): TaskProgress => ({
   total: 0,

@@ -115,6 +115,7 @@ func (s *Service) processFile(ctx context.Context, file model.MovieFileInfo) mod
 	result.Title = details.Title
 	result.Rating = details.Rating
 	for _, warning := range outcome.warnings {
+		s.log.Warn("service", "%s", warning)
 		result.Error = appendWarning(result.Error, warning)
 	}
 	if err != nil {
@@ -147,6 +148,7 @@ func (s *Service) processSID(ctx context.Context, sid string, sourcePath *string
 	result.Rating = details.Rating
 	result.Filename = details.Title
 	for _, warning := range outcome.warnings {
+		s.log.Warn("service", "%s", warning)
 		result.Error = appendWarning(result.Error, warning)
 	}
 	if err != nil {
@@ -171,7 +173,8 @@ func (s *Service) finish(ctx context.Context, details model.MovieDetails, source
 	out := finishOutcome{warnings: []string{}}
 
 	// prefer_source_dir: the organized directory prefers the source video's own
-	// directory; single-SID runs without a source file fall back to MovieFolder.
+	// directory; single-SID runs without a source file fall back to MovieFolder
+	// or, when it is empty/unavailable, to exeDir/downloads.
 	base := ""
 	if s.cfg.PreferSourceDir && sourcePath != "" {
 		base = filepath.Dir(sourcePath)
@@ -188,13 +191,19 @@ func (s *Service) finish(ctx context.Context, details model.MovieDetails, source
 	}
 	out.dir = dir
 
+	if s.cfg.CreateRatingFile && details.Rating == "" {
+		out.warnings = append(out.warnings, "豆瓣评分为空，未创建豆瓣评分文件")
+	}
+
 	if s.cfg.FetchIMDb && details.IMDbID != "" {
 		rating, err := s.imdb.Fetch(ctx, details.IMDbID)
 		if err != nil {
 			out.warnings = append(out.warnings, fmt.Sprintf("IMDb 评分获取失败：%v", err))
 		} else if rating != nil {
-			if _, err := s.org.WriteIMDbRating(dir, *rating); err != nil {
-				out.warnings = append(out.warnings, fmt.Sprintf("写入 IMDb 评分文件失败：%v", err))
+			if s.cfg.CreateRatingFile {
+				if _, err := s.org.WriteIMDbRating(dir, *rating); err != nil {
+					out.warnings = append(out.warnings, fmt.Sprintf("写入 IMDb 评分文件失败：%v", err))
+				}
 			}
 		}
 	}

@@ -110,7 +110,7 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
             <input v-model="cfg.movieFolder" class="input" placeholder="选择存放视频文件的目录…" spellcheck="false" />
             <button class="btn" type="button" @click="chooseDir">浏览…</button>
           </div>
-          <span class="field-hint">整理目录与归档后的视频文件都会生成在此路径下。</span>
+          <span class="field-hint">整理目录与归档后的视频文件都会生成在此路径下；留空或目录不存在且无源文件时，回退到程序目录下的 downloads。</span>
         </div>
         <div class="divider" style="margin: 18px 0" />
         <div class="field">

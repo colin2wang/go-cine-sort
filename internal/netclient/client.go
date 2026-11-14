@@ -19,12 +19,13 @@ import (
 )
 
 const (
-	UserAgent     = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+	UserAgent     = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 	UserAgentIMDb = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 	DoubanReferer = "https://www.douban.com/"
 	MovieReferer  = "https://movie.douban.com/"
 
 	maxResponseBytes = 16 << 20
+	bidAlphabet      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 type Options struct {
@@ -54,6 +55,7 @@ type Client struct {
 	http      *http.Client
 	log       *logging.Logger
 	rateLimit bool
+	bid       string
 }
 
 func New(log *logging.Logger) *Client {
@@ -62,10 +64,17 @@ func New(log *logging.Logger) *Client {
 		// cookiejar.New only fails with malformed options; nil options never fail.
 		panic(err)
 	}
+	// 豆瓣用 bid Cookie 识别浏览器会话，缺失时会直接 403；每个客户端实例
+	// 生成一个固定的随机 bid，模拟一次浏览器会话。
+	bid := make([]byte, 11)
+	for i := range bid {
+		bid[i] = bidAlphabet[rand.Intn(len(bidAlphabet))]
+	}
 	return &Client{
 		http:      &http.Client{Jar: jar},
 		log:       log,
 		rateLimit: true,
+		bid:       string(bid),
 	}
 }
 
@@ -87,11 +96,29 @@ func (c *Client) pause(ctx context.Context) error {
 	}
 }
 
-func (c *Client) baseHeaders(opts Options) http.Header {
+func (c *Client) baseHeaders(rawURL string, opts Options) http.Header {
 	h := http.Header{}
 	h.Set("User-Agent", UserAgent)
-	h.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+	h.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
 	h.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+	// 与 Chrome/133 UA 匹配的客户端提示与请求上下文头，缺失会被豆瓣判定为非浏览器。
+	h.Set("sec-ch-ua", `"Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"`)
+	h.Set("sec-ch-ua-mobile", "?0")
+	h.Set("sec-ch-ua-platform", `"Windows"`)
+	h.Set("sec-fetch-dest", "document")
+	h.Set("sec-fetch-mode", "navigate")
+	h.Set("sec-fetch-site", "none")
+	h.Set("upgrade-insecure-requests", "1")
+	if strings.Contains(rawURL, "douban.com") {
+		h.Set("sec-fetch-site", "same-site")
+		// 带 Cookie 的请求才带 Referer 语义；bid 缺失是豆瓣 403 的常见原因。
+		if opts.Referer == "" {
+			h.Set("Referer", DoubanReferer)
+		}
+		if _, hasCookie := opts.Headers["Cookie"]; !hasCookie {
+			h.Set("Cookie", "bid="+c.bid)
+		}
+	}
 	if opts.Referer != "" {
 		h.Set("Referer", opts.Referer)
 	}
@@ -115,7 +142,7 @@ func (c *Client) Open(ctx context.Context, method, rawURL string, body io.Reader
 		cancel()
 		return nil, fmt.Errorf("build request %s: %w", rawURL, err)
 	}
-	req.Header = c.baseHeaders(opts)
+	req.Header = c.baseHeaders(rawURL, opts)
 
 	// DEBUG 级别输出所有外部 API 调用的方法与 URL（GET 的查询参数含在 URL 内）。
 	c.log.Debug("net", "%s %s", method, rawURL)

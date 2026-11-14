@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import LogConsole from '@/components/LogConsole.vue'
-import { taskState } from '@/store/task'
+import { logPanelCollapsed, taskState } from '@/store/task'
 </script>
 
 <template>
   <!-- 参考风格：全宽扁平底部区域，背景与左侧侧边栏同款，无边框、无内缩。 -->
-  <section class="app-log-panel">
-    <LogConsole :logs="taskState.logs" :height="200" />
+  <section v-if="!logPanelCollapsed" class="app-log-panel">
+    <LogConsole :logs="taskState.logs" :height="140" />
   </section>
 </template>
 

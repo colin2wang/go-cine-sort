@@ -1,4 +1,7 @@
-// Package imdb fetches a title rating from IMDb's public GraphQL endpoint.
+// Package imdb fetches a title rating from IMDb's public GraphQL endpoint
+// (api.graphql.imdb.com). Page-scraping libraries (StalkR/imdb, filmigo) are
+// blocked by awswaf with HTTP 202, while this endpoint accepts browser-like
+// requests.
 package imdb
 
 import (
@@ -12,7 +15,7 @@ import (
 	"go-cine-sort/internal/netclient"
 )
 
-const graphqlURL = "https://graphql.imdb.com/"
+const graphqlURL = "https://api.graphql.imdb.com/"
 
 var reIMDbID = regexp.MustCompile(`^tt\d+$`)
 
@@ -44,21 +47,40 @@ func (r *Rating) Fetch(ctx context.Context, imdbID string) (*float64, error) {
 	}
 	query := fmt.Sprintf(`query { title(id: "%s") { ratingsSummary { aggregateRating voteCount } } }`, imdbID)
 	payload := map[string]string{"query": query}
+	opts := netclient.Options{
+		Timeout: 15 * time.Second,
+		Headers: map[string]string{
+			"User-Agent":      netclient.UserAgent,
+			"Accept":          "application/json",
+			"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+			"Origin":          "https://www.imdb.com",
+			"Referer":         "https://www.imdb.com/",
+		},
+	}
 
-	resp, err := r.net.PostJSON(ctx, graphqlURL, payload, netclient.Options{Timeout: 15 * time.Second})
+	start := time.Now()
+	resp, err := r.net.PostJSON(ctx, graphqlURL, payload, opts)
 	if err != nil {
 		return nil, fmt.Errorf("IMDb 评分请求失败: %w", err)
 	}
+	r.log.Debug("imdb", "%s 请求耗时 %s 状态 %d", imdbID, time.Since(start).Round(time.Millisecond), resp.StatusCode)
+	r.log.Debug("imdb", "%s 响应体 %s", imdbID, string(resp.Body))
+
 	var out graphqlResponse
 	if err := json.Unmarshal(resp.Body, &out); err != nil {
 		return nil, fmt.Errorf("IMDb 响应解析失败: %w", err)
 	}
 	if out.Data.Title == nil || out.Data.Title.RatingsSummary == nil ||
 		out.Data.Title.RatingsSummary.AggregateRating == nil {
-		r.log.Warn("imdb", "%s 无评分数据", imdbID)
+		r.log.Debug("imdb", "%s 无评分数据（title/summary 为空）", imdbID)
 		return nil, nil
 	}
 	value := *out.Data.Title.RatingsSummary.AggregateRating
+	votes := 0
+	if out.Data.Title.RatingsSummary.VoteCount != nil {
+		votes = *out.Data.Title.RatingsSummary.VoteCount
+	}
+	r.log.Debug("imdb", "%s 解析到评分 %.1f（%d 票）", imdbID, value, votes)
 	r.log.Info("imdb", "%s 评分 %.1f", imdbID, value)
 	return &value, nil
 }

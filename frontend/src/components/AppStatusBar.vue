@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { api } from '@/api'
-import { taskState } from '@/store/task'
+import { logPanelCollapsed, taskState } from '@/store/task'
 
 const configPath = ref('')
 const ready = ref(false)
@@ -20,6 +20,17 @@ const stage = computed(() => taskState.progress.stage)
 <template>
   <footer class="status">
     <div class="left">
+      <button
+        class="log-toggle"
+        type="button"
+        :title="logPanelCollapsed ? '展开日志面板' : '折叠日志面板'"
+        @click="logPanelCollapsed = !logPanelCollapsed"
+      >
+        <span class="log-toggle-label">日志</span>
+        <span v-if="taskState.logs.length" class="log-toggle-count">{{ taskState.logs.length }}</span>
+        <span class="log-toggle-arrow" :class="{ up: !logPanelCollapsed }">▴</span>
+      </button>
+      <span class="sep">/</span>
       <span class="conn" :class="ready ? 'ok' : 'bad'" />
       <span>{{ ready ? '后端已连接' : '后端未就绪' }}</span>
       <span class="sep">/</span>
@@ -68,6 +79,34 @@ const stage = computed(() => taskState.progress.stage)
 .sep {
   color: var(--text-3);
   opacity: 0.5;
+}
+.log-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  font-size: 11px;
+  gap: 6px;
+  padding: 2px 6px;
+}
+.log-toggle:hover {
+  color: var(--text-1);
+}
+.log-toggle-count {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 10px;
+  padding: 0 5px;
+}
+.log-toggle-arrow {
+  font-size: 10px;
+  opacity: 0.7;
+  transition: transform 0.2s var(--ease);
+}
+.log-toggle-arrow.up {
+  transform: rotate(180deg);
 }
 .path {
   color: var(--text-3);

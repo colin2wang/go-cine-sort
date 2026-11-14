@@ -44,6 +44,17 @@ func Dir() (string, error) {
 	return filepath.Dir(exe), nil
 }
 
+// FallbackDir returns the fallback organizing directory: a "downloads"
+// subdirectory next to the executable. The folder itself may not exist; the
+// caller is responsible for creating it when used.
+func FallbackDir() (string, error) {
+	dir, err := Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "downloads"), nil
+}
+
 func Path() (string, error) {
 	dir, err := Dir()
 	if err != nil {
@@ -150,12 +161,8 @@ func (c *AppConfig) normalize() {
 }
 
 // Validate rejects values that would make the pipeline fail at runtime.
+// MovieFolder 为空或不存在均允许：运行时会回退到 FallbackDir（exe 目录下 downloads）。
 func (c *AppConfig) Validate() error {
-	if strings.TrimSpace(c.MovieFolder) != "" {
-		if _, err := os.Stat(c.MovieFolder); err != nil {
-			return fmt.Errorf("电影目录不可用: %w", err)
-		}
-	}
 	if !strings.Contains(c.DirectoryFormat, "{chinese_title}") &&
 		!strings.Contains(c.DirectoryFormat, "{english_title}") &&
 		!strings.Contains(c.DirectoryFormat, "{year}") {
