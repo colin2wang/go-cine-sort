@@ -52,7 +52,7 @@ No ImageMagick, Inkscape, or Python required.
 
 ## Configuration
 
-On first run, a config file is generated at `%APPDATA%\go-cine-sort\config.yml`. Edit it on the **Settings** page or by hand as YAML. The database and logs live in the same directory (`cine_sort.db`, `logs/`). No drive letters are hardcoded.
+On first run, a config file is generated next to the executable as `config.yml`. Edit it on the **Settings** page or by hand as YAML. The database and logs live in the same directory (`cine_sort.db`, `logs/`). No drive letters are hardcoded.
 
 Key options:
 
@@ -60,6 +60,7 @@ Key options:
 movie_folder: ""                                    # movie directory (required)
 directory_format: "{chinese_title}.{english_title}.{year}"
 recursive: true
+prefer_source_dir: true      # prefer the source video's own directory for the organized folder
 archive_move: false          # archive/move videos, off by default
 conflict_strategy: rename    # rename / skip / overwrite
 create_rating_file: true

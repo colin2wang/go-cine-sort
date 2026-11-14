@@ -41,6 +41,7 @@ func Defaults() (AppConfig, error) {
 		MovieFolder:      "",
 		DirectoryFormat:  DefaultDirectoryFormat,
 		Recursive:        true,
+		PreferSourceDir:  true,
 		ArchiveMove:      false,
 		ConflictStrategy: DefaultConflictStrategy,
 		CreateRatingFile: true,

@@ -4,6 +4,7 @@ export namespace config {
 	    movieFolder: string;
 	    directoryFormat: string;
 	    recursive: boolean;
+	    preferSourceDir: boolean;
 	    archiveMove: boolean;
 	    conflictStrategy: string;
 	    createRatingFile: boolean;
@@ -26,6 +27,7 @@ export namespace config {
 	        this.movieFolder = source["movieFolder"];
 	        this.directoryFormat = source["directoryFormat"];
 	        this.recursive = source["recursive"];
+	        this.preferSourceDir = source["preferSourceDir"];
 	        this.archiveMove = source["archiveMove"];
 	        this.conflictStrategy = source["conflictStrategy"];
 	        this.createRatingFile = source["createRatingFile"];

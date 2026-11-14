@@ -1,8 +1,11 @@
 import { reactive } from 'vue'
-import { onItemResult, onLog, onProgress, onTaskDone, onTaskError } from '@/api'
-import type { LogEntry, ProcessResult, TaskProgress, TaskSummary } from '@/types'
+import { api, onItemResult, onLog, onProgress, onTaskDone, onTaskError } from '@/api'
+import type { LogEntry, LogLevel, ProcessResult, TaskProgress, TaskSummary } from '@/types'
 
 const MAX_LOGS = 600
+
+/** 日志级别从低到高，供显示过滤使用。 */
+export const LOG_LEVELS: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR']
 
 const emptyProgress = (): TaskProgress => ({
   total: 0,
@@ -17,6 +20,7 @@ const emptyProgress = (): TaskProgress => ({
 export const taskState = reactive({
   running: false,
   logs: [] as LogEntry[],
+  logLevel: 'INFO' as LogLevel,
   results: [] as ProcessResult[],
   progress: emptyProgress(),
   summary: null as TaskSummary | null,
@@ -57,6 +61,16 @@ export function pushLocalLog(level: LogEntry['level'], message: string, source =
   })
   if (taskState.logs.length > MAX_LOGS) {
     taskState.logs.splice(0, taskState.logs.length - MAX_LOGS)
+  }
+}
+
+/** 切换日志级别：同时调整显示过滤与后端 logger 的最低级别（会话级，不持久化）。 */
+export async function setLogLevel(level: LogLevel): Promise<void> {
+  taskState.logLevel = level
+  try {
+    await api.setLogLevel(level)
+  } catch (err) {
+    pushLocalLog('WARN', `日志级别切换失败：${err}`, 'ui')
   }
 }
 

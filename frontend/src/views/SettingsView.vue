@@ -11,6 +11,7 @@ const showRules = ref(false)
 
 const boolFlags = computed(() => [
   { key: 'recursive' as const, label: '递归扫描子目录', hint: '关闭后只处理所选目录的第一层' },
+  { key: 'preferSourceDir' as const, label: '目录跟随视频文件', hint: '开启后整理目录优先创建在原视频文件所在目录' },
   { key: 'downloadPosters' as const, label: '下载官方海报', hint: '筛选高清官方海报并保存到整理目录' },
   { key: 'fetchImdb' as const, label: '获取 IMDb 评分', hint: '生成 IMDB x.x.txt 评分文件' },
   { key: 'createRatingFile' as const, label: '生成评分文件', hint: '生成 {豆瓣评分}.txt' },
@@ -74,7 +75,7 @@ async function restore() {
   }
 }
 
-function toggle(key: 'recursive' | 'downloadPosters' | 'fetchImdb' | 'createRatingFile' | 'createSidFile' | 'archiveMove') {
+function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetchImdb' | 'createRatingFile' | 'createSidFile' | 'archiveMove') {
   if (!cfg.value) return
   cfg.value = { ...cfg.value, [key]: !cfg.value[key] }
 }

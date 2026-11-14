@@ -31,4 +31,6 @@ export function ScanDirectory(arg1:string,arg2:boolean):Promise<Array<model.Movi
 
 export function SelectDirectory(arg1:string):Promise<string>;
 
+export function SetLogLevel(arg1:string):Promise<void>;
+
 export function StartBatch(arg1:string,arg2:boolean,arg3:Array<string>):Promise<void>;

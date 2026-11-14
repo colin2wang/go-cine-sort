@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { api } from '@/api'
-import LogConsole from '@/components/LogConsole.vue'
 import { beginTask, clearLogs, installTaskEvents, pushLocalLog, taskState } from '@/store/task'
 import { notify, reportError } from '@/store/toast'
 import type { AppConfig, MovieDetail, ProcessResult } from '@/types'
@@ -229,11 +228,6 @@ async function openFolder() {
       <div v-else class="empty-state" style="padding: 30px 10px">
         <div>尚无产物记录</div>
       </div>
-    </section>
-
-    <section class="glass-card card-pad">
-      <h2 class="section-title" style="margin-bottom: 14px">实时日志</h2>
-      <LogConsole :logs="taskState.logs" :height="170" />
     </section>
   </div>
 </template>

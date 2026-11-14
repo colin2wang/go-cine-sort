@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { api } from '@/api'
 import MovieTable from '@/components/MovieTable.vue'
 import ProgressPanel from '@/components/ProgressPanel.vue'
-import LogConsole from '@/components/LogConsole.vue'
 import { beginTask, clearLogs, installTaskEvents, pushLocalLog, taskState } from '@/store/task'
 import { notify, reportError } from '@/store/toast'
 import type { MovieRow, ProcessResult } from '@/types'
@@ -227,14 +226,6 @@ async function openFolder(path: string) {
     </section>
 
     <ProgressPanel :progress="taskState.progress" />
-
-    <section class="glass-card card-pad">
-      <div class="row-between" style="margin-bottom: 14px">
-        <h2 class="section-title">实时日志</h2>
-        <button class="btn btn-ghost btn-sm" type="button" @click="clearLogs()">清空</button>
-      </div>
-      <LogConsole :logs="taskState.logs" :height="200" />
-    </section>
   </div>
 </template>
 

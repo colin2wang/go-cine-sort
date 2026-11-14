@@ -107,6 +107,17 @@ func (a *App) Ping() string {
 	return "pong"
 }
 
+// SetLogLevel adjusts the logger's minimum level at runtime (DEBUG / INFO /
+// WARN / ERROR). The choice is session-only; restarts return to INFO.
+func (a *App) SetLogLevel(level string) {
+	if a.log == nil {
+		return
+	}
+	l := logging.ParseLevel(level)
+	a.log.SetLevel(l)
+	a.log.Info("app", "日志级别已切换为 %s", l)
+}
+
 func (a *App) GetConfig() (config.AppConfig, error) {
 	if a.cfg == nil {
 		return config.Defaults()

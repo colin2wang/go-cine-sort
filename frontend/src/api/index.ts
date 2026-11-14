@@ -2,6 +2,7 @@ import type {
   AppConfig,
   HistoryStats,
   LogEntry,
+  LogLevel,
   MovieDetail,
   MovieFileInfo,
   MovieRecord,
@@ -46,6 +47,7 @@ export const api = {
   getDefaults: () => invoke<AppConfig>('GetDefaults'),
   isRunning: () => invoke<boolean>('IsRunning'),
   listDirectory: (dir: string) => invoke<string[]>('ListDirectory', dir),
+  setLogLevel: (level: LogLevel) => invoke<void>('SetLogLevel', level),
 }
 
 type Unsubscribe = () => void

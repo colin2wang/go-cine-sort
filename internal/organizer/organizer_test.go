@@ -52,6 +52,22 @@ func TestCreateSimpleDirectory(t *testing.T) {
 	}
 }
 
+func TestCreateByDetailAtUsesGivenBase(t *testing.T) {
+	org, _ := newTestOrganizer(t)
+	base := t.TempDir()
+	dir, err := org.CreateByDetailAt(base, model.MovieDetails{
+		Title:       "肖申克的救赎 The Shawshank Redemption",
+		SearchTitle: "肖申克的救赎",
+		Year:        "1994",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := filepath.Dir(dir); got != base {
+		t.Errorf("目录应创建在指定基准目录下: dir=%q base=%q", dir, base)
+	}
+}
+
 func TestCreateByDetailWithEnglishInTitle(t *testing.T) {
 	org, _ := newTestOrganizer(t)
 	dir, err := org.CreateByDetail(model.MovieDetails{

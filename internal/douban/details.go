@@ -39,12 +39,14 @@ var (
 	reDetailLanguage  = regexp.MustCompile(`语言:</span>([^<]+)`)
 	reReleaseDate     = regexp.MustCompile(`<span property="v:initialReleaseDate"[^>]*>([^<]+)</span>`)
 	reRuntime         = regexp.MustCompile(`<span property="v:runtime"[^>]*>(\d+)`)
-	reIMDbID          = regexp.MustCompile(`IMDb:</span>\s*([^<\s]+)`)
-	reVotes           = regexp.MustCompile(`<span property="v:votes">(\d+)</span>`)
-	rePosterURL       = regexp.MustCompile(`<img[^>]+src="([^"]+)"[^>]*title="点击看更多海报"`)
-	reShortComments   = regexp.MustCompile(`<a href="https://movie\.douban\.com/subject/\d+/comments[^>]*>全部 (\d+) 条</a>`)
-	reReviews         = regexp.MustCompile(`<a href="reviews">全部 (\d+) 条</a>`)
-	reTop250          = regexp.MustCompile(`<div class="top250"><span class="top250-no">No\.(\d+)</span>`)
+	// IMDb 渲染为超链接（<a href="...imdb.com/title/tt…">tt…</a>）时，纯文本
+	// 形式 `[^<\s]+` 会静默失配，导致 details.IMDbID 为空、评分文件被跳过。
+	reIMDbID        = regexp.MustCompile(`IMDb:</span>\s*(?:<a[^>]*>)?(tt\d+)`)
+	reVotes         = regexp.MustCompile(`<span property="v:votes">(\d+)</span>`)
+	rePosterURL     = regexp.MustCompile(`<img[^>]+src="([^"]+)"[^>]*title="点击看更多海报"`)
+	reShortComments = regexp.MustCompile(`<a href="https://movie\.douban\.com/subject/\d+/comments[^>]*>全部 (\d+) 条</a>`)
+	reReviews       = regexp.MustCompile(`<a href="reviews">全部 (\d+) 条</a>`)
+	reTop250        = regexp.MustCompile(`<div class="top250"><span class="top250-no">No\.(\d+)</span>`)
 )
 
 type Details struct {

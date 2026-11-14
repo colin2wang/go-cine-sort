@@ -117,6 +117,9 @@ func (c *Client) Open(ctx context.Context, method, rawURL string, body io.Reader
 	}
 	req.Header = c.baseHeaders(opts)
 
+	// DEBUG 级别输出所有外部 API 调用的方法与 URL（GET 的查询参数含在 URL 内）。
+	c.log.Debug("net", "%s %s", method, rawURL)
+
 	resp, err := c.http.Do(req)
 	if err != nil {
 		cancel()
@@ -172,6 +175,7 @@ func (c *Client) PostForm(ctx context.Context, rawURL string, values url.Values,
 		opts.Headers = map[string]string{}
 	}
 	opts.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	c.log.Debug("net", "POST %s 参数=%s", rawURL, values.Encode())
 	resp, err := c.Open(ctx, http.MethodPost, rawURL, strings.NewReader(values.Encode()), opts)
 	if err != nil {
 		return nil, err
@@ -189,6 +193,7 @@ func (c *Client) PostJSON(ctx context.Context, rawURL string, payload any, opts 
 	}
 	opts.Headers["Content-Type"] = "application/json"
 	opts.Headers["User-Agent"] = UserAgentIMDb
+	c.log.Debug("net", "POST %s 参数=%s", rawURL, data)
 	resp, err := c.Open(ctx, http.MethodPost, rawURL, bytes.NewReader(data), opts)
 	if err != nil {
 		return nil, err

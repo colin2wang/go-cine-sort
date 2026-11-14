@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -169,7 +170,19 @@ type finishOutcome struct {
 func (s *Service) finish(ctx context.Context, details model.MovieDetails, sourcePath string) (finishOutcome, error) {
 	out := finishOutcome{warnings: []string{}}
 
-	dir, err := s.org.CreateByDetail(details)
+	// prefer_source_dir: the organized directory prefers the source video's own
+	// directory; single-SID runs without a source file fall back to MovieFolder.
+	base := ""
+	if s.cfg.PreferSourceDir && sourcePath != "" {
+		base = filepath.Dir(sourcePath)
+	}
+	var dir string
+	var err error
+	if base != "" {
+		dir, err = s.org.CreateByDetailAt(base, details)
+	} else {
+		dir, err = s.org.CreateByDetail(details)
+	}
 	if err != nil {
 		return out, fmt.Errorf("生成整理目录失败：%w", err)
 	}

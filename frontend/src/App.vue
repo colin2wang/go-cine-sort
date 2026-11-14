@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppHeader from '@/components/AppHeader.vue'
+import AppLogPanel from '@/components/AppLogPanel.vue'
 import AppStatusBar from '@/components/AppStatusBar.vue'
 import AppToast from '@/components/AppToast.vue'
 import { installTaskEvents } from '@/store/task'
@@ -30,6 +31,9 @@ onMounted(() => {
         </Transition>
       </RouterView>
     </main>
+    <div class="app-logs">
+      <AppLogPanel />
+    </div>
     <div class="app-status">
       <AppStatusBar />
     </div>

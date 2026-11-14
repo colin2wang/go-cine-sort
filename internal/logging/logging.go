@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -31,6 +32,21 @@ func (l Level) String() string {
 		return "ERROR"
 	default:
 		return "INFO"
+	}
+}
+
+// ParseLevel maps a level name (case-insensitive) to a Level; unknown input
+// falls back to LevelInfo.
+func ParseLevel(s string) Level {
+	switch strings.ToUpper(strings.TrimSpace(s)) {
+	case "DEBUG":
+		return LevelDebug
+	case "WARN":
+		return LevelWarn
+	case "ERROR":
+		return LevelError
+	default:
+		return LevelInfo
 	}
 }
 

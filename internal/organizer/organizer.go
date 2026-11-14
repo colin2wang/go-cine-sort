@@ -120,13 +120,21 @@ func (o *Organizer) CreateSimple(info SimpleInfo) (string, error) {
 
 // CreateByDetail mirrors create_movie_directory_by_detail, including its
 // three-way decision about the English title, and writes the full SID text.
+// The configured movie folder is used as base directory.
 func (o *Organizer) CreateByDetail(d model.MovieDetails) (string, error) {
-	if strings.TrimSpace(d.Title) == "" {
-		return "", fmt.Errorf("片名不能为空")
-	}
 	base, err := o.baseDir()
 	if err != nil {
 		return "", err
+	}
+	return o.CreateByDetailAt(base, d)
+}
+
+// CreateByDetailAt is CreateByDetail with an explicit base directory; the
+// pipeline uses it when prefer_source_dir prefers the source video's own
+// directory over the configured movie folder.
+func (o *Organizer) CreateByDetailAt(base string, d model.MovieDetails) (string, error) {
+	if strings.TrimSpace(d.Title) == "" {
+		return "", fmt.Errorf("片名不能为空")
 	}
 
 	chinese := CleanFilename(strings.TrimSpace(d.Title))

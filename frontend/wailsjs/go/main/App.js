@@ -58,6 +58,10 @@ export function SelectDirectory(arg1) {
   return window['go']['main']['App']['SelectDirectory'](arg1);
 }
 
+export function SetLogLevel(arg1) {
+  return window['go']['main']['App']['SetLogLevel'](arg1);
+}
+
 export function StartBatch(arg1, arg2, arg3) {
   return window['go']['main']['App']['StartBatch'](arg1, arg2, arg3);
 }

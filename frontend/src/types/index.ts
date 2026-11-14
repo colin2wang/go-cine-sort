@@ -4,6 +4,7 @@ export interface AppConfig {
   movieFolder: string
   directoryFormat: string
   recursive: boolean
+  preferSourceDir: boolean
   archiveMove: boolean
   conflictStrategy: ConflictStrategy
   createRatingFile: boolean

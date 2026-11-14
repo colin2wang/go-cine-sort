@@ -16,6 +16,7 @@ type AppConfig struct {
 	MovieFolder      string   `yaml:"movie_folder" json:"movieFolder"`
 	DirectoryFormat  string   `yaml:"directory_format" json:"directoryFormat"`
 	Recursive        bool     `yaml:"recursive" json:"recursive"`
+	PreferSourceDir  bool     `yaml:"prefer_source_dir" json:"preferSourceDir"`
 	ArchiveMove      bool     `yaml:"archive_move" json:"archiveMove"`
 	ConflictStrategy string   `yaml:"conflict_strategy" json:"conflictStrategy"`
 	CreateRatingFile bool     `yaml:"create_rating_file" json:"createRatingFile"`
