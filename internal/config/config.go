@@ -1,5 +1,5 @@
 // Package config loads and persists the application configuration as YAML in
-// the per-user config directory, with embedded defaults as a safety net.
+// the executable's own directory, with embedded defaults as a safety net.
 package config
 
 import (
@@ -32,13 +32,15 @@ type AppConfig struct {
 	DataDir    string `yaml:"-" json:"dataDir"`
 }
 
-// Dir returns the per-user application data directory.
+// Dir returns the application data directory: the directory containing the
+// running executable, so all generated files stay next to the program (portable)
+// instead of under the user's AppData\Roaming.
 func Dir() (string, error) {
-	base, err := os.UserConfigDir()
+	exe, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf("resolve user config dir: %w", err)
+		return "", fmt.Errorf("resolve executable path: %w", err)
 	}
-	return filepath.Join(base, "go-cine-sort"), nil
+	return filepath.Dir(exe), nil
 }
 
 func Path() (string, error) {
