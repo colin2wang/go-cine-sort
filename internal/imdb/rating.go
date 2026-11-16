@@ -49,6 +49,7 @@ func (r *Rating) Fetch(ctx context.Context, imdbID string) (*float64, error) {
 	payload := map[string]string{"query": query}
 	opts := netclient.Options{
 		Timeout: 15 * time.Second,
+		Purpose: "IMDb 评分",
 		Headers: map[string]string{
 			"User-Agent":      netclient.UserAgent,
 			"Accept":          "application/json",

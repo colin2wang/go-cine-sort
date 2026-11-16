@@ -13,6 +13,9 @@ var defaultRulesYAML []byte
 const (
 	DefaultDirectoryFormat  = "{chinese_title}.{english_title}.{year}"
 	DefaultConflictStrategy = "rename"
+	// DefaultPosterFormat converts every saved poster to JPG (quality 90);
+	// allowed values are "none" (keep original), "png" and "jpg".
+	DefaultPosterFormat = "jpg"
 )
 
 type ruleFile struct {
@@ -47,6 +50,7 @@ func Defaults() (AppConfig, error) {
 		CreateRatingFile: true,
 		CreateSIDFile:    true,
 		DownloadPosters:  true,
+		PosterFormat:     DefaultPosterFormat,
 		FetchIMDb:        true,
 		Extensions:       append([]string(nil), rules.Extensions...),
 		CleanupPatterns:  append([]string(nil), rules.CleanupPatterns...),

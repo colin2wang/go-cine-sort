@@ -1,3 +1,122 @@
+export namespace cache {
+	
+	export class Entry {
+	    key: string;
+	    method: string;
+	    url: string;
+	    source: string;
+	    purpose: string;
+	    statusCode: number;
+	    header: Record<string, string>;
+	    body: string;
+	    bodyBytes: number;
+	    // Go type: time
+	    cachedAt: any;
+	    // Go type: time
+	    expiresAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new Entry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	        this.method = source["method"];
+	        this.url = source["url"];
+	        this.source = source["source"];
+	        this.purpose = source["purpose"];
+	        this.statusCode = source["statusCode"];
+	        this.header = source["header"];
+	        this.body = source["body"];
+	        this.bodyBytes = source["bodyBytes"];
+	        this.cachedAt = this.convertValues(source["cachedAt"], null);
+	        this.expiresAt = this.convertValues(source["expiresAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Stats {
+	    count: number;
+	    totalBodyBytes: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Stats(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.count = source["count"];
+	        this.totalBodyBytes = source["totalBodyBytes"];
+	    }
+	}
+	export class Summary {
+	    key: string;
+	    method: string;
+	    url: string;
+	    source: string;
+	    purpose: string;
+	    statusCode: number;
+	    bodyBytes: number;
+	    // Go type: time
+	    cachedAt: any;
+	    // Go type: time
+	    expiresAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new Summary(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.key = source["key"];
+	        this.method = source["method"];
+	        this.url = source["url"];
+	        this.source = source["source"];
+	        this.purpose = source["purpose"];
+	        this.statusCode = source["statusCode"];
+	        this.bodyBytes = source["bodyBytes"];
+	        this.cachedAt = this.convertValues(source["cachedAt"], null);
+	        this.expiresAt = this.convertValues(source["expiresAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace config {
 	
 	export class AppConfig {
@@ -10,6 +129,7 @@ export namespace config {
 	    createRatingFile: boolean;
 	    createSidFile: boolean;
 	    downloadPosters: boolean;
+	    posterFormat: string;
 	    fetchImdb: boolean;
 	    extensions: string[];
 	    cleanupPatterns: string[];
@@ -33,6 +153,7 @@ export namespace config {
 	        this.createRatingFile = source["createRatingFile"];
 	        this.createSidFile = source["createSidFile"];
 	        this.downloadPosters = source["downloadPosters"];
+	        this.posterFormat = source["posterFormat"];
 	        this.fetchImdb = source["fetchImdb"];
 	        this.extensions = source["extensions"];
 	        this.cleanupPatterns = source["cleanupPatterns"];

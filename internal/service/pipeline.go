@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"go-cine-sort/internal/cache"
 	"go-cine-sort/internal/config"
 	"go-cine-sort/internal/douban"
 	"go-cine-sort/internal/imdb"
@@ -28,17 +29,18 @@ type Events struct {
 }
 
 type Service struct {
-	cfg     *config.AppConfig
-	log     *logging.Logger
-	net     *netclient.Client
-	scanner *scanner.Scanner
-	search  *douban.Search
-	details *douban.Details
-	posters *douban.Posters
-	imdb    *imdb.Rating
-	org     *organizer.Organizer
-	store   *store.Store
-	events  Events
+	cfg       *config.AppConfig
+	log       *logging.Logger
+	net       *netclient.Client
+	httpCache *cache.Store
+	scanner   *scanner.Scanner
+	search    *douban.Search
+	details   *douban.Details
+	posters   *douban.Posters
+	imdb      *imdb.Rating
+	org       *organizer.Organizer
+	store     *store.Store
+	events    Events
 
 	baseCtx context.Context
 	mu      sync.Mutex
@@ -48,6 +50,8 @@ type Service struct {
 
 func New(cfg *config.AppConfig, log *logging.Logger, events Events) (*Service, error) {
 	net := netclient.New(log)
+	httpCache := cache.New()
+	net.SetCache(httpCache)
 	scan, err := scanner.New(cfg, log)
 	if err != nil {
 		return nil, err
@@ -57,19 +61,22 @@ func New(cfg *config.AppConfig, log *logging.Logger, events Events) (*Service, e
 	if err != nil {
 		return nil, err
 	}
+	posters := douban.NewPosters(net, log)
+	posters.SetFormat(cfg.PosterFormat)
 	return &Service{
-		cfg:     cfg,
-		log:     log,
-		net:     net,
-		scanner: scan,
-		search:  douban.NewSearch(net, log),
-		details: douban.NewDetails(net, log),
-		posters: douban.NewPosters(net, log),
-		imdb:    imdb.NewRating(net, log),
-		org:     organizer.New(cfg, log),
-		store:   st,
-		events:  events,
-		baseCtx: context.Background(),
+		cfg:       cfg,
+		log:       log,
+		net:       net,
+		httpCache: httpCache,
+		scanner:   scan,
+		search:    douban.NewSearch(net, log),
+		details:   douban.NewDetails(net, log),
+		posters:   posters,
+		imdb:      imdb.NewRating(net, log),
+		org:       organizer.New(cfg, log),
+		store:     st,
+		events:    events,
+		baseCtx:   context.Background(),
 	}, nil
 }
 
@@ -92,6 +99,7 @@ func (s *Service) ReloadConfig(cfg *config.AppConfig) error {
 	}
 	s.cfg = cfg
 	s.org.SetConfig(cfg)
+	s.posters.SetFormat(cfg.PosterFormat)
 	return nil
 }
 
@@ -120,6 +128,20 @@ func (s *Service) GetHistoryDetail(ctx context.Context, sid string) (model.Movie
 func (s *Service) Stats(ctx context.Context) (model.HistoryStats, error) {
 	return s.store.Stats(ctx)
 }
+
+// CacheList returns summaries of all cached HTTP responses.
+func (s *Service) CacheList() []cache.Summary { return s.httpCache.List() }
+
+// CacheEntry returns one cached HTTP response body by key.
+func (s *Service) CacheEntry(key string) (*cache.Entry, bool) {
+	return s.httpCache.GetEntry(key)
+}
+
+// CacheStats reports cache size counters.
+func (s *Service) CacheStats() cache.Stats { return s.httpCache.Stats() }
+
+// CacheClear drops every cached response.
+func (s *Service) CacheClear() { s.httpCache.Clear() }
 
 func (s *Service) emitProgress(p model.TaskProgress) {
 	if s.events.Progress != nil {

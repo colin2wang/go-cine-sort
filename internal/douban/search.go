@@ -72,7 +72,7 @@ func (s *Search) Search(ctx context.Context, name, year string) (model.SearchRes
 	u.RawQuery = q.Encode()
 
 	s.log.Info("search", "GET %s", u.String())
-	resp, err := s.net.Get(ctx, u.String(), netclient.Options{Timeout: 10 * time.Second})
+	resp, err := s.net.Get(ctx, u.String(), netclient.Options{Timeout: 10 * time.Second, Purpose: "豆瓣搜索"})
 	if err != nil {
 		return model.SearchResult{}, fmt.Errorf("豆瓣搜索请求失败: %w", err)
 	}

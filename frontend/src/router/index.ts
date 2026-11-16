@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '历史记录', subtitle: '查看已整理影片与海报归档' },
   },
   {
+    path: '/cache',
+    name: 'cache',
+    component: () => import('@/views/CacheView.vue'),
+    meta: { title: '响应缓存', subtitle: '检查外部 API 与页面请求的原始响应' },
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),

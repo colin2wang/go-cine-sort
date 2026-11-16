@@ -13,7 +13,7 @@ Wails v2.17.1 Windows 桌面应用（Go 1.27 后端 + Vue 3.5/TS/pnpm 前端）�
 
 ## 架构
 
-`app.go`（Wails 绑定）→ `internal/service` 流水线 → `scanner` 扫描清洗 → `douban`/`imdb` 抓取 → `organizer` 建目录/归档 → `store` SQLite 持久化。`internal/model` 是前后端 JSON 契约的唯一来源；`frontend/wailsjs/go` 是生成的绑定代码且已提交，修改 Go 绑定后必须同步更新。
+`app.go`（Wails 绑定）→ `internal/service` 流水线 → `scanner` 扫描清洗 → `douban`/`imdb` 抓取 → `organizer` 建目录/归档 → `store` SQLite 持久化。`internal/netclient` 是所有外部 HTTP 的统一出口，经 `internal/cache`（go-cache，TTL 1h）记录并回放响应；`internal/model` 是前后端 JSON 契约的唯一来源；`frontend/wailsjs/go` 是生成的绑定代码且已提交，修改 Go 绑定后必须同步更新。
 
 ## 项目特有注意事项
 

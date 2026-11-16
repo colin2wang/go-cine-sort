@@ -10,6 +10,8 @@ export interface AppConfig {
   createRatingFile: boolean
   createSidFile: boolean
   downloadPosters: boolean
+  /** 海报保存格式：none 不转换 / png / jpg，默认 jpg */
+  posterFormat: 'none' | 'png' | 'jpg'
   fetchImdb: boolean
   extensions: string[]
   cleanupPatterns: string[]
@@ -133,6 +135,28 @@ export interface HistoryStats {
   total: number
   averageRating: number
   posterTotal: number
+}
+
+export interface CacheSummary {
+  key: string
+  method: string
+  url: string
+  source: string
+  purpose: string
+  statusCode: number
+  bodyBytes: number
+  cachedAt: string
+  expiresAt: string
+}
+
+export interface CacheEntry extends CacheSummary {
+  header: Record<string, string>
+  body: string
+}
+
+export interface CacheStats {
+  count: number
+  totalBodyBytes: number
 }
 
 export const EVENT = {

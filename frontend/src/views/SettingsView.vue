@@ -143,6 +143,15 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
               </div>
             </div>
           </div>
+          <div class="field" style="margin-top: 18px">
+            <span class="field-label">海报图片格式</span>
+            <select v-model="cfg.posterFormat" class="select" :disabled="!cfg.downloadPosters">
+              <option value="none">不转换（保留原始格式）</option>
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+            </select>
+            <span class="field-hint">下载的海报会自动转换成所选格式保存；JPG 以 90% 质量重编码。</span>
+          </div>
         </section>
 
         <section class="glass-card card-pad">

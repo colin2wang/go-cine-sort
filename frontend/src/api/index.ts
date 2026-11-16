@@ -1,5 +1,8 @@
 import type {
   AppConfig,
+  CacheEntry,
+  CacheStats,
+  CacheSummary,
   HistoryStats,
   LogEntry,
   LogLevel,
@@ -48,6 +51,10 @@ export const api = {
   isRunning: () => invoke<boolean>('IsRunning'),
   listDirectory: (dir: string) => invoke<string[]>('ListDirectory', dir),
   setLogLevel: (level: LogLevel) => invoke<void>('SetLogLevel', level),
+  listCache: () => invoke<CacheSummary[]>('ListCache'),
+  getCacheEntry: (key: string) => invoke<CacheEntry>('GetCacheEntry', key),
+  getCacheStats: () => invoke<CacheStats>('GetCacheStats'),
+  clearCache: () => invoke<void>('ClearCache'),
 }
 
 type Unsubscribe = () => void

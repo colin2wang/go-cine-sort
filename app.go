@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	goruntime "runtime"
 	"sort"
 	"strings"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
 	appbridge "go-cine-sort/internal/app"
+	"go-cine-sort/internal/cache"
 	"go-cine-sort/internal/config"
+	"go-cine-sort/internal/folder"
 	"go-cine-sort/internal/logging"
 	"go-cine-sort/internal/model"
 	"go-cine-sort/internal/service"
@@ -242,6 +242,44 @@ func (a *App) GetHistoryStats() (model.HistoryStats, error) {
 	return a.svc.Stats(a.ctx)
 }
 
+// ListCache returns summaries of every cached HTTP response, newest first.
+func (a *App) ListCache() ([]cache.Summary, error) {
+	if err := a.ready(); err != nil {
+		return nil, err
+	}
+	return a.svc.CacheList(), nil
+}
+
+// GetCacheEntry returns one cached response (headers + body) by key.
+func (a *App) GetCacheEntry(key string) (*cache.Entry, error) {
+	if err := a.ready(); err != nil {
+		return nil, err
+	}
+	entry, ok := a.svc.CacheEntry(key)
+	if !ok {
+		return nil, errors.New("缓存条目不存在或已过期")
+	}
+	return entry, nil
+}
+
+// GetCacheStats reports cached entry count and total body bytes.
+func (a *App) GetCacheStats() (cache.Stats, error) {
+	if err := a.ready(); err != nil {
+		return cache.Stats{}, err
+	}
+	return a.svc.CacheStats(), nil
+}
+
+// ClearCache drops every cached response.
+func (a *App) ClearCache() error {
+	if err := a.ready(); err != nil {
+		return err
+	}
+	a.svc.CacheClear()
+	a.log.Info("app", "HTTP 响应缓存已清空")
+	return nil
+}
+
 // ListDirectory lists the files produced inside an organized directory.
 func (a *App) ListDirectory(dir string) ([]string, error) {
 	if strings.TrimSpace(dir) == "" {
@@ -261,23 +299,8 @@ func (a *App) ListDirectory(dir string) ([]string, error) {
 	return out, nil
 }
 
-// OpenFolder reveals a directory in the native file manager.
+// OpenFolder reveals a directory in the native file manager, reusing an
+// existing Explorer window when the directory is already open (Windows).
 func (a *App) OpenFolder(path string) error {
-	path = strings.TrimSpace(path)
-	if path == "" {
-		return errors.New("路径为空")
-	}
-	if _, err := os.Stat(path); err != nil {
-		return fmt.Errorf("路径不存在: %w", err)
-	}
-	var cmd *exec.Cmd
-	switch goruntime.GOOS {
-	case "windows":
-		cmd = exec.Command("explorer.exe", filepath.FromSlash(path))
-	case "darwin":
-		cmd = exec.Command("open", path)
-	default:
-		cmd = exec.Command("xdg-open", path)
-	}
-	return cmd.Start()
+	return folder.Open(path)
 }

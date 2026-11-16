@@ -6,6 +6,18 @@ export function CancelTask() {
   return window['go']['main']['App']['CancelTask']();
 }
 
+export function ClearCache() {
+  return window['go']['main']['App']['ClearCache']();
+}
+
+export function GetCacheEntry(arg1) {
+  return window['go']['main']['App']['GetCacheEntry'](arg1);
+}
+
+export function GetCacheStats() {
+  return window['go']['main']['App']['GetCacheStats']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
@@ -24,6 +36,10 @@ export function GetHistoryStats() {
 
 export function IsRunning() {
   return window['go']['main']['App']['IsRunning']();
+}
+
+export function ListCache() {
+  return window['go']['main']['App']['ListCache']();
 }
 
 export function ListDirectory(arg1) {

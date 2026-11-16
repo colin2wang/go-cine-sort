@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"go-cine-sort/internal/cache"
 	"go-cine-sort/internal/logging"
 )
 
@@ -33,6 +34,9 @@ type Options struct {
 	Referer       string
 	Headers       map[string]string
 	SkipRateLimit bool
+	// Purpose describes the business intent of the call, recorded in the
+	// response cache for debugging (e.g. "豆瓣详情页").
+	Purpose string
 }
 
 func (o Options) timeout() time.Duration {
@@ -56,6 +60,7 @@ type Client struct {
 	log       *logging.Logger
 	rateLimit bool
 	bid       string
+	cache     *cache.Store
 }
 
 func New(log *logging.Logger) *Client {
@@ -80,6 +85,10 @@ func New(log *logging.Logger) *Client {
 
 // SetRateLimit allows tests to disable the polite delay.
 func (c *Client) SetRateLimit(enabled bool) { c.rateLimit = enabled }
+
+// SetCache attaches the response cache. GET responses are replayed on hit;
+// every completed exchange (GET / POST) is recorded for inspection.
+func (c *Client) SetCache(store *cache.Store) { c.cache = store }
 
 func (c *Client) pause(ctx context.Context) error {
 	if !c.rateLimit {
@@ -183,6 +192,19 @@ func readResponse(resp *http.Response) (*Response, error) {
 }
 
 func (c *Client) Get(ctx context.Context, rawURL string, opts Options) (*Response, error) {
+	key := ""
+	if c.cache != nil {
+		key = cache.Key(http.MethodGet, rawURL, nil)
+		if hit, ok := c.cache.Lookup(key); ok {
+			c.log.Debug("net", "缓存命中 %s", rawURL)
+			return &Response{
+				StatusCode: hit.StatusCode,
+				Body:       hit.Body,
+				URL:        hit.URL,
+				Header:     hit.Header,
+			}, nil
+		}
+	}
 	resp, err := c.Open(ctx, http.MethodGet, rawURL, nil, opts)
 	if err != nil {
 		return nil, err
@@ -194,6 +216,7 @@ func (c *Client) Get(ctx context.Context, rawURL string, opts Options) (*Respons
 	if out.StatusCode >= 400 {
 		return nil, fmt.Errorf("HTTP %d for %s", out.StatusCode, rawURL)
 	}
+	c.cache.PutResponse(key, opts.Purpose, http.MethodGet, out.StatusCode, out.Header, out.URL, out.Body)
 	return out, nil
 }
 
@@ -202,12 +225,18 @@ func (c *Client) PostForm(ctx context.Context, rawURL string, values url.Values,
 		opts.Headers = map[string]string{}
 	}
 	opts.Headers["Content-Type"] = "application/x-www-form-urlencoded"
-	c.log.Debug("net", "POST %s 参数=%s", rawURL, values.Encode())
-	resp, err := c.Open(ctx, http.MethodPost, rawURL, strings.NewReader(values.Encode()), opts)
+	body := values.Encode()
+	c.log.Debug("net", "POST %s 参数=%s", rawURL, body)
+	resp, err := c.Open(ctx, http.MethodPost, rawURL, strings.NewReader(body), opts)
 	if err != nil {
 		return nil, err
 	}
-	return readResponse(resp)
+	out, err := readResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+	c.cache.PutResponse(cache.Key(http.MethodPost, rawURL, []byte(body)), opts.Purpose, http.MethodPost, out.StatusCode, out.Header, out.URL, out.Body)
+	return out, nil
 }
 
 func (c *Client) PostJSON(ctx context.Context, rawURL string, payload any, opts Options) (*Response, error) {
@@ -232,6 +261,7 @@ func (c *Client) PostJSON(ctx context.Context, rawURL string, payload any, opts 
 	if out.StatusCode >= 400 {
 		return nil, fmt.Errorf("HTTP %d for %s", out.StatusCode, rawURL)
 	}
+	c.cache.PutResponse(cache.Key(http.MethodPost, rawURL, data), opts.Purpose, http.MethodPost, out.StatusCode, out.Header, out.URL, out.Body)
 	return out, nil
 }
 

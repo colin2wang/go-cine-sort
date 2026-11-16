@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"net/http"
 	"os"
@@ -15,6 +18,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	// 注册 image.Decode 支持的解码器；豆瓣海报以 webp 为主。
+	_ "golang.org/x/image/webp"
+	_ "image/gif"
 
 	"go-cine-sort/internal/logging"
 	"go-cine-sort/internal/model"
@@ -164,17 +171,21 @@ func validImageFile(path string) bool {
 }
 
 type Posters struct {
-	net *netclient.Client
-	log *logging.Logger
+	net    *netclient.Client
+	log    *logging.Logger
+	format string // "none"/"png"/"jpg"; empty keeps originals
 }
 
 func NewPosters(net *netclient.Client, log *logging.Logger) *Posters {
 	return &Posters{net: net, log: log}
 }
 
+// SetFormat sets the target conversion format ("none"/"png"/"jpg").
+func (p *Posters) SetFormat(format string) { p.format = format }
+
 func (p *Posters) fetchPage(ctx context.Context, sid, photoType string) (string, error) {
 	url := fmt.Sprintf("https://movie.douban.com/subject/%s/photos?type=%s", sid, photoType)
-	resp, err := p.net.FetchWithVerification(ctx, url, 2)
+	resp, err := p.net.FetchWithVerification(ctx, url, 2, "豆瓣海报列表页")
 	if err != nil {
 		return "", err
 	}
@@ -249,12 +260,12 @@ func (p *Posters) DownloadOfficial(ctx context.Context, sid, saveDir, keyword st
 		seen[poster.Original] = true
 
 		dest := filepath.Join(saveDir, posterFileName(poster))
-		size, err := p.download(ctx, poster.Original, dest)
+		size, finalPath, err := p.download(ctx, poster.Original, dest)
 		if err != nil {
 			p.log.Warn("poster", "下载失败 %s: %v", path.Base(poster.Original), err)
 			continue
 		}
-		all = append(all, downloaded{path: dest, poster: poster, size: size})
+		all = append(all, downloaded{path: finalPath, poster: poster, size: size})
 		if size >= minQualifiedSize {
 			if isChineseRegion(poster.Title) {
 				qualifiedCN++
@@ -371,7 +382,7 @@ func (p *Posters) imageSize(ctx context.Context, rawURL string) int64 {
 	return size
 }
 
-func (p *Posters) download(ctx context.Context, rawURL, dest string) (int64, error) {
+func (p *Posters) download(ctx context.Context, rawURL, dest string) (int64, string, error) {
 	urls := append([]string{rawURL}, alternativeCDNs(rawURL)...)
 	opts := netclient.Options{
 		Timeout:       30 * time.Second,
@@ -382,7 +393,7 @@ func (p *Posters) download(ctx context.Context, rawURL, dest string) (int64, err
 	for _, url := range urls {
 		for attempt := 1; attempt <= maxPosterRetries; attempt++ {
 			if err := ctx.Err(); err != nil {
-				return 0, err
+				return 0, "", err
 			}
 			resp, err := p.net.Open(ctx, http.MethodGet, url, nil, opts)
 			if err != nil {
@@ -404,15 +415,67 @@ func (p *Posters) download(ctx context.Context, rawURL, dest string) (int64, err
 				_ = os.Remove(dest)
 				continue
 			}
-			stat, err := os.Stat(dest)
+			finalPath, err := p.convertPoster(dest)
 			if err != nil {
-				return 0, err
+				p.log.Warn("poster", "格式转换失败 %s: %v", path.Base(dest), err)
+				_ = os.Remove(dest)
+				continue
 			}
-			return stat.Size(), nil
+			stat, err := os.Stat(finalPath)
+			if err != nil {
+				return 0, "", err
+			}
+			return stat.Size(), finalPath, nil
 		}
 	}
 	_ = os.Remove(dest)
-	return 0, fmt.Errorf("所有 CDN 均下载失败: %s", path.Base(rawURL))
+	return 0, "", fmt.Errorf("所有 CDN 均下载失败: %s", path.Base(rawURL))
+}
+
+// convertPoster re-encodes the downloaded image into the configured format and
+// returns the final path (possibly with a new extension). A format of
+// "none"/"" keeps the original file untouched.
+func (p *Posters) convertPoster(src string) (string, error) {
+	switch p.format {
+	case "png", "jpg":
+	default:
+		return src, nil
+	}
+
+	f, err := os.Open(src)
+	if err != nil {
+		return "", err
+	}
+	img, _, err := image.Decode(f)
+	_ = f.Close()
+	if err != nil {
+		return "", fmt.Errorf("解码图片失败: %w", err)
+	}
+
+	targetExt := "." + p.format
+	dst := strings.TrimSuffix(src, filepath.Ext(src)) + targetExt
+	out, err := os.Create(dst)
+	if err != nil {
+		return "", err
+	}
+	switch p.format {
+	case "jpg":
+		err = jpeg.Encode(out, img, &jpeg.Options{Quality: 90})
+	default:
+		err = png.Encode(out, img)
+	}
+	if closeErr := out.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		_ = os.Remove(dst)
+		return "", fmt.Errorf("编码 %s 失败: %w", p.format, err)
+	}
+	if dst != src {
+		_ = os.Remove(src)
+		p.log.Debug("poster", "已转换为 %s: %s", p.format, filepath.Base(dst))
+	}
+	return dst, nil
 }
 
 func (p *Posters) streamToFile(body io.Reader, dest string) error {

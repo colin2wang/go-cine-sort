@@ -62,7 +62,7 @@ func NewDetails(net *netclient.Client, log *logging.Logger) *Details {
 func (d *Details) Fetch(ctx context.Context, sid string) (string, error) {
 	target := fmt.Sprintf("https://movie.douban.com/subject/%s/", sid)
 	d.log.Info("details", "抓取详情页 SID=%s", sid)
-	resp, err := d.net.FetchWithVerification(ctx, target, 2)
+	resp, err := d.net.FetchWithVerification(ctx, target, 2, "豆瓣详情页")
 	if err != nil {
 		return "", fmt.Errorf("豆瓣详情页获取失败 (SID %s): %w", sid, err)
 	}

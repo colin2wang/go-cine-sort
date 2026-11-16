@@ -53,11 +53,12 @@ func firstMatch(re *regexp.Regexp, text string) (string, bool) {
 // FetchWithVerification loads a Douban page, transparently solving the PoW
 // challenge when present. Unlike the Python version it reuses the shared
 // cookie jar, so verification is not repeated for every subsequent request.
-func (c *Client) FetchWithVerification(ctx context.Context, targetURL string, maxRetries int) (*Response, error) {
+// purpose is recorded in the response cache for debugging.
+func (c *Client) FetchWithVerification(ctx context.Context, targetURL string, maxRetries int, purpose string) (*Response, error) {
 	if maxRetries <= 0 {
 		maxRetries = 2
 	}
-	opts := Options{Timeout: 15 * time.Second, Referer: DoubanReferer}
+	opts := Options{Timeout: 15 * time.Second, Referer: DoubanReferer, Purpose: purpose}
 
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
@@ -99,6 +100,7 @@ func (c *Client) FetchWithVerification(ctx context.Context, targetURL string, ma
 							verify, err := c.PostForm(ctx, actionURL, form, Options{
 								Timeout: 20 * time.Second,
 								Referer: DoubanReferer,
+								Purpose: "豆瓣 PoW 验证",
 							})
 							if err != nil {
 								lastErr = err

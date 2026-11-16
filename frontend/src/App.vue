@@ -27,7 +27,9 @@ onMounted(() => {
     <main class="app-main">
       <RouterView v-slot="{ Component }">
         <Transition name="route-fade" mode="out-in">
-          <component :is="Component" />
+          <KeepAlive>
+            <component :is="Component" />
+          </KeepAlive>
         </Transition>
       </RouterView>
     </main>

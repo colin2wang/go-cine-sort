@@ -22,6 +22,7 @@ type AppConfig struct {
 	CreateRatingFile bool     `yaml:"create_rating_file" json:"createRatingFile"`
 	CreateSIDFile    bool     `yaml:"create_sid_file" json:"createSidFile"`
 	DownloadPosters  bool     `yaml:"download_posters" json:"downloadPosters"`
+	PosterFormat     string   `yaml:"poster_format" json:"posterFormat"`
 	FetchIMDb        bool     `yaml:"fetch_imdb" json:"fetchImdb"`
 	Extensions       []string `yaml:"extensions" json:"extensions"`
 	CleanupPatterns  []string `yaml:"cleanup_patterns" json:"cleanupPatterns"`
@@ -167,6 +168,11 @@ func (c *AppConfig) Validate() error {
 		!strings.Contains(c.DirectoryFormat, "{english_title}") &&
 		!strings.Contains(c.DirectoryFormat, "{year}") {
 		return fmt.Errorf("目录名模板至少需要一个变量")
+	}
+	switch c.PosterFormat {
+	case "", "none", "png", "jpg":
+	default:
+		return fmt.Errorf("海报转换格式仅支持 不转换/png/jpg，收到 %q", c.PosterFormat)
 	}
 	return nil
 }
