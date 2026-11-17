@@ -53,6 +53,26 @@ async function chooseDir() {
   }
 }
 
+async function chooseYouTubeSourceDir() {
+  if (!cfg.value) return
+  try {
+    const picked = await api.selectDirectory(cfg.value.youtubeSourceDir)
+    if (picked) cfg.value.youtubeSourceDir = picked
+  } catch (e) {
+    reportError(e, '选择目录失败')
+  }
+}
+
+async function chooseYouTubeTargetDir() {
+  if (!cfg.value) return
+  try {
+    const picked = await api.selectDirectory(cfg.value.youtubeTargetDir)
+    if (picked) cfg.value.youtubeTargetDir = picked
+  } catch (e) {
+    reportError(e, '选择目录失败')
+  }
+}
+
 async function save() {
   if (!cfg.value) return
   saving.value = true
@@ -111,6 +131,23 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
             <button class="btn" type="button" @click="chooseDir">浏览…</button>
           </div>
           <span class="field-hint">整理目录与归档后的视频文件都会生成在此路径下；留空或目录不存在且无源文件时，回退到程序目录下的 downloads。</span>
+        </div>
+        <div class="divider" style="margin: 18px 0" />
+        <div class="field">
+          <span class="field-label">YouTube 归档源目录</span>
+          <div class="input-group">
+            <input v-model="cfg.youtubeSourceDir" class="input" placeholder="待整理的 YouTube 文件所在目录…" spellcheck="false" />
+            <button class="btn" type="button" @click="chooseYouTubeSourceDir">浏览…</button>
+          </div>
+          <span class="field-hint">「YouTube 归档」页默认从这里扫描按 “上传者 - 标题” 命名的文件。</span>
+        </div>
+        <div class="field" style="margin-top: 14px">
+          <span class="field-label">YouTube 归档目标目录</span>
+          <div class="input-group">
+            <input v-model="cfg.youtubeTargetDir" class="input" placeholder="按上传者分类存放的根目录…" spellcheck="false" />
+            <button class="btn" type="button" @click="chooseYouTubeTargetDir">浏览…</button>
+          </div>
+          <span class="field-hint">文件会被移动到该目录下以上传者命名的子文件夹。</span>
         </div>
         <div class="divider" style="margin: 18px 0" />
         <div class="field">

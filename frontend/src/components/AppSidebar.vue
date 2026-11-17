@@ -19,6 +19,11 @@ const items = [
     icon: 'M3 4h18v16H3zM7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4',
   },
   {
+    path: '/youtube',
+    label: 'YouTube 归档',
+    icon: 'M10 8.5v7l6-3.5-6-3.5zM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z',
+  },
+  {
     path: '/history',
     label: '历史记录',
     icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',

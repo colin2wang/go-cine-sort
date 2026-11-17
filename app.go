@@ -18,6 +18,7 @@ import (
 	"go-cine-sort/internal/logging"
 	"go-cine-sort/internal/model"
 	"go-cine-sort/internal/service"
+	"go-cine-sort/internal/youtube"
 )
 
 // App is the object bound to the Wails frontend. It owns the application
@@ -215,6 +216,25 @@ func (a *App) CancelTask() bool {
 		return false
 	}
 	return a.svc.CancelTask()
+}
+
+// PlanYouTubeSort previews the YouTube archive operation without moving files.
+func (a *App) PlanYouTubeSort(sourceDir, targetBase string) (*youtube.PlanResult, error) {
+	if err := a.ready(); err != nil {
+		return nil, err
+	}
+	return a.svc.PlanYouTubeSort(sourceDir, targetBase)
+}
+
+// StartYouTubeSort launches the YouTube archive task in the background.
+func (a *App) StartYouTubeSort(sourceDir, targetBase, conflictAction string) error {
+	if err := a.ready(); err != nil {
+		return err
+	}
+	if conflictAction != string(youtube.ConflictOverwrite) {
+		conflictAction = string(youtube.ConflictSkip)
+	}
+	return a.svc.StartYouTubeSort(sourceDir, targetBase, youtube.ConflictAction(conflictAction))
 }
 
 func (a *App) IsRunning() bool {

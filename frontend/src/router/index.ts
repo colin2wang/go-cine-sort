@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '历史记录', subtitle: '查看已整理影片与海报归档' },
   },
   {
+    path: '/youtube',
+    name: 'youtube',
+    component: () => import('@/views/YouTubeView.vue'),
+    meta: { title: 'YouTube 归档', subtitle: '按上传者将 YouTube 视频文件移动到分类目录' },
+  },
+  {
     path: '/cache',
     name: 'cache',
     component: () => import('@/views/CacheView.vue'),

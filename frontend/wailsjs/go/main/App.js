@@ -58,6 +58,10 @@ export function Ping() {
   return window['go']['main']['App']['Ping']();
 }
 
+export function PlanYouTubeSort(arg1, arg2) {
+  return window['go']['main']['App']['PlanYouTubeSort'](arg1, arg2);
+}
+
 export function ProcessBySID(arg1) {
   return window['go']['main']['App']['ProcessBySID'](arg1);
 }
@@ -80,4 +84,8 @@ export function SetLogLevel(arg1) {
 
 export function StartBatch(arg1, arg2, arg3) {
   return window['go']['main']['App']['StartBatch'](arg1, arg2, arg3);
+}
+
+export function StartYouTubeSort(arg1, arg2, arg3) {
+  return window['go']['main']['App']['StartYouTubeSort'](arg1, arg2, arg3);
 }

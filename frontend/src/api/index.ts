@@ -12,6 +12,8 @@ import type {
   ProcessResult,
   TaskProgress,
   TaskSummary,
+  YouTubeConflictAction,
+  YouTubePlanResult,
 } from '@/types'
 
 type BindingFn = (...args: any[]) => Promise<any>
@@ -52,6 +54,10 @@ export const api = {
   listDirectory: (dir: string) => invoke<string[]>('ListDirectory', dir),
   setLogLevel: (level: LogLevel) => invoke<void>('SetLogLevel', level),
   listCache: () => invoke<CacheSummary[]>('ListCache'),
+  planYouTubeSort: (sourceDir: string, targetBase: string) =>
+    invoke<YouTubePlanResult>('PlanYouTubeSort', sourceDir, targetBase),
+  startYouTubeSort: (sourceDir: string, targetBase: string, conflictAction: YouTubeConflictAction) =>
+    invoke<void>('StartYouTubeSort', sourceDir, targetBase, conflictAction),
   getCacheEntry: (key: string) => invoke<CacheEntry>('GetCacheEntry', key),
   getCacheStats: () => invoke<CacheStats>('GetCacheStats'),
   clearCache: () => invoke<void>('ClearCache'),

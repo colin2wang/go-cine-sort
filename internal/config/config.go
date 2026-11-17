@@ -14,6 +14,8 @@ import (
 
 type AppConfig struct {
 	MovieFolder      string   `yaml:"movie_folder" json:"movieFolder"`
+	YouTubeSourceDir string   `yaml:"youtube_source_dir" json:"youtubeSourceDir"`
+	YouTubeTargetDir string   `yaml:"youtube_target_dir" json:"youtubeTargetDir"`
 	DirectoryFormat  string   `yaml:"directory_format" json:"directoryFormat"`
 	Recursive        bool     `yaml:"recursive" json:"recursive"`
 	PreferSourceDir  bool     `yaml:"prefer_source_dir" json:"preferSourceDir"`

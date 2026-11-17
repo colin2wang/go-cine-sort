@@ -2,6 +2,9 @@ export type ConflictStrategy = 'rename' | 'skip' | 'overwrite'
 
 export interface AppConfig {
   movieFolder: string
+  /** YouTube 归档源目录（!待整理）与目标根目录 */
+  youtubeSourceDir: string
+  youtubeTargetDir: string
   directoryFormat: string
   recursive: boolean
   preferSourceDir: boolean
@@ -157,6 +160,22 @@ export interface CacheEntry extends CacheSummary {
 export interface CacheStats {
   count: number
   totalBodyBytes: number
+}
+
+export type YouTubeConflictAction = 'skip' | 'overwrite'
+
+export interface YouTubeMovePlan {
+  filename: string
+  sourceDir: string
+  uploader: string
+  destDir: string
+  destPath: string
+}
+
+export interface YouTubePlanResult {
+  moves: YouTubeMovePlan[]
+  conflicts: string[]
+  unmatched: string[]
 }
 
 export const EVENT = {

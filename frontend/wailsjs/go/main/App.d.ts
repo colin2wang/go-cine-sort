@@ -3,6 +3,7 @@
 import {cache} from '../models';
 import {config} from '../models';
 import {model} from '../models';
+import {youtube} from '../models';
 
 export function CancelTask():Promise<boolean>;
 
@@ -32,6 +33,8 @@ export function OpenFolder(arg1:string):Promise<void>;
 
 export function Ping():Promise<string>;
 
+export function PlanYouTubeSort(arg1:string,arg2:string):Promise<youtube.PlanResult>;
+
 export function ProcessBySID(arg1:string):Promise<model.ProcessResult>;
 
 export function SaveConfig(arg1:config.AppConfig):Promise<config.AppConfig>;
@@ -43,3 +46,5 @@ export function SelectDirectory(arg1:string):Promise<string>;
 export function SetLogLevel(arg1:string):Promise<void>;
 
 export function StartBatch(arg1:string,arg2:boolean,arg3:Array<string>):Promise<void>;
+
+export function StartYouTubeSort(arg1:string,arg2:string,arg3:string):Promise<void>;
