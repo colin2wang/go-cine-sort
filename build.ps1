@@ -6,7 +6,7 @@
       1. Verify go / node / pnpm toolchain and Wails CLI v2.17.1
          (installs the CLI with `go install` when missing).
       2. Install frontend dependencies and build Vue/TS assets with pnpm.
-      3. Run `wails build -clean -s` to produce build/bin/go-cine-sort.exe.
+      3. Run `wails build -clean -s` to produce build/bin/cine-sort.exe.
 
     No NSIS installer and no zip archive are produced - the deliverable is
     the single exe. Icons are generated separately by generate-icon.ps1.
@@ -30,7 +30,7 @@ $PSNativeCommandUseErrorActionPreference = $false
 $Root = $PSScriptRoot
 $WailsVersion = 'v2.17.1'
 $VersionTag = '2\.17\.1'
-$OutputExe = Join-Path $Root 'build/bin/go-cine-sort.exe'
+$OutputExe = Join-Path $Root 'build/bin/cine-sort.exe'
 
 function Write-Step([string]$Message) {
     Write-Host "`n==> $Message" -ForegroundColor Cyan

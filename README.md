@@ -29,7 +29,7 @@ wails dev
 `build.ps1` runs in order: verifies `go` / `node` / `pnpm` and the Wails CLI version (auto `go install ...@v2.17.1` if missing) → generates icons → `pnpm install --frozen-lockfile` → `pnpm run build` → `wails build -clean -s`. Output:
 
 ```
-build/bin/go-cine-sort.exe
+build/bin/cine-sort.exe
 ```
 
 Common flags:

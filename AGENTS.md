@@ -8,7 +8,7 @@ Wails v2.17.1 Windows 桌面应用（Go 1.27 后端 + Vue 3.5/TS/pnpm 前端）�
 
 - Go 测试与检查：`go test ./...`、`go vet ./...`（仓库根执行）
 - 前端类型检查：`pnpm -C frontend exec vue-tsc --noEmit`
-- 完整构建：`.\build.ps1`（可 `-SkipInstall`），产出 `build/bin/go-cine-sort.exe`；图标单独由 `.\generate-icon.ps1` 生成，构建只校验其存在。
+- 完整构建：`.\build.ps1`（可 `-SkipInstall`），产出 `build/bin/cine-sort.exe`；图标单独由 `.\generate-icon.ps1` 生成，构建只校验其存在。
 - 前端开发：`wails dev`（前后端联动）或 `pnpm -C frontend run dev`
 
 ## 架构

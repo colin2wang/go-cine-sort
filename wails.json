@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "go-cine-sort",
-  "outputfilename": "go-cine-sort",
+  "outputfilename": "cine-sort",
   "frontend:install": "pnpm install",
   "frontend:build": "pnpm run build",
   "frontend:dev:install": "pnpm install",
