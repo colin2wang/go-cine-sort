@@ -74,6 +74,10 @@ export function ScanDirectory(arg1, arg2) {
   return window['go']['main']['App']['ScanDirectory'](arg1, arg2);
 }
 
+export function ScanMediaFiles(arg1, arg2) {
+  return window['go']['main']['App']['ScanMediaFiles'](arg1, arg2);
+}
+
 export function SelectDirectory(arg1) {
   return window['go']['main']['App']['SelectDirectory'](arg1);
 }
@@ -86,6 +90,14 @@ export function StartBatch(arg1, arg2, arg3) {
   return window['go']['main']['App']['StartBatch'](arg1, arg2, arg3);
 }
 
+export function StartMediaRename(arg1, arg2) {
+  return window['go']['main']['App']['StartMediaRename'](arg1, arg2);
+}
+
 export function StartYouTubeSort(arg1, arg2, arg3) {
   return window['go']['main']['App']['StartYouTubeSort'](arg1, arg2, arg3);
+}
+
+export function UpdateMediaTags(arg1, arg2, arg3) {
+  return window['go']['main']['App']['UpdateMediaTags'](arg1, arg2, arg3);
 }

@@ -144,7 +144,7 @@ func (a *App) SaveConfig(cfg config.AppConfig) (config.AppConfig, error) {
 		return cfg, err
 	}
 	cfg.DataDir = dir
-	cfg.ConfigPath = filepath.Join(dir, "config.yml")
+	cfg.ConfigPath, _ = config.ConfigsDir()
 	if err := config.Save(&cfg); err != nil {
 		return cfg, err
 	}
@@ -235,6 +235,30 @@ func (a *App) StartYouTubeSort(sourceDir, targetBase, conflictAction string) err
 		conflictAction = string(youtube.ConflictSkip)
 	}
 	return a.svc.StartYouTubeSort(sourceDir, targetBase, youtube.ConflictAction(conflictAction))
+}
+
+// ScanMediaFiles lists video files with tags and rename plans.
+func (a *App) ScanMediaFiles(dir string, recursive bool) ([]service.MediaFileMeta, error) {
+	if err := a.ready(); err != nil {
+		return nil, err
+	}
+	return a.svc.ScanMediaFiles(dir, recursive)
+}
+
+// UpdateMediaTags writes title/comment tags to one video file.
+func (a *App) UpdateMediaTags(path string, title, comment string) error {
+	if err := a.ready(); err != nil {
+		return err
+	}
+	return a.svc.UpdateMediaTags(path, title, comment)
+}
+
+// StartMediaRename launches the batch rename task in the background.
+func (a *App) StartMediaRename(dir string, recursive bool) error {
+	if err := a.ready(); err != nil {
+		return err
+	}
+	return a.svc.StartMediaRename(dir, recursive)
 }
 
 func (a *App) IsRunning() bool {

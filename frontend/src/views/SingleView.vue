@@ -110,10 +110,10 @@ async function openFolder() {
   <div class="page-body fade-in-up">
     <div class="page-head">
       <div>
-        <h1 class="page-title">单部处理</h1>
+        <h1 class="page-title">电影指定整理</h1>
         <p class="page-subtitle">已知豆瓣 SID 时，跳过文件名识别直接整理一部影片</p>
       </div>
-      <RouterLink to="/workbench" class="btn btn-ghost btn-sm">前往批量整理 →</RouterLink>
+      <RouterLink to="/workbench" class="btn btn-ghost btn-sm">前往电影批量整理 →</RouterLink>
     </div>
 
     <section class="glass-card card-pad">
@@ -196,7 +196,7 @@ async function openFolder() {
           </div>
         </div>
         <div class="divider" style="margin: 16px 0" />
-        <div class="field-hint">选项会写入应用配置，对批量整理同样生效。</div>
+        <div class="field-hint">选项会写入应用配置，对电影批量整理同样生效。</div>
         <RouterLink to="/settings" class="link-more">前往设置查看更多 →</RouterLink>
       </section>
     </div>

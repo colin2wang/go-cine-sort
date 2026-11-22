@@ -3,6 +3,7 @@ module go-cine-sort
 go 1.27
 
 require (
+	github.com/abema/go-mp4 v1.7.4
 	github.com/go-ole/go-ole v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c

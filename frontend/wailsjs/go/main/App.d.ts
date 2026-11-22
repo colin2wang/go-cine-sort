@@ -4,6 +4,7 @@ import {cache} from '../models';
 import {config} from '../models';
 import {model} from '../models';
 import {youtube} from '../models';
+import {service} from '../models';
 
 export function CancelTask():Promise<boolean>;
 
@@ -41,10 +42,16 @@ export function SaveConfig(arg1:config.AppConfig):Promise<config.AppConfig>;
 
 export function ScanDirectory(arg1:string,arg2:boolean):Promise<Array<model.MovieFileInfo>>;
 
+export function ScanMediaFiles(arg1:string,arg2:boolean):Promise<Array<service.MediaFileMeta>>;
+
 export function SelectDirectory(arg1:string):Promise<string>;
 
 export function SetLogLevel(arg1:string):Promise<void>;
 
 export function StartBatch(arg1:string,arg2:boolean,arg3:Array<string>):Promise<void>;
 
+export function StartMediaRename(arg1:string,arg2:boolean):Promise<void>;
+
 export function StartYouTubeSort(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function UpdateMediaTags(arg1:string,arg2:string,arg3:string):Promise<void>;

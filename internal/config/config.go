@@ -59,15 +59,82 @@ func FallbackDir() (string, error) {
 }
 
 func Path() (string, error) {
+	return ConfigsDir()
+}
+
+// ConfigsDir returns the directory holding the per-domain configuration files
+// (movie.yml / video.yml / youtube.yml), next to the executable for portability.
+func ConfigsDir() (string, error) {
 	dir, err := Dir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "config.yml"), nil
+	return filepath.Join(dir, "configs"), nil
 }
 
-// Load reads config.yml. Missing keys keep their embedded default values; if
-// the file does not exist it is created from the defaults on first run.
+// configFiles maps each config file name to the AppConfig it persists.
+func configSections(cfg *AppConfig) map[string]any {
+	type movieSection struct {
+		MovieFolder      string `yaml:"movie_folder"`
+		DirectoryFormat  string `yaml:"directory_format"`
+		Recursive        bool   `yaml:"recursive"`
+		PreferSourceDir  bool   `yaml:"prefer_source_dir"`
+		ArchiveMove      bool   `yaml:"archive_move"`
+		ConflictStrategy string `yaml:"conflict_strategy"`
+		CreateRatingFile bool   `yaml:"create_rating_file"`
+		CreateSIDFile    bool   `yaml:"create_sid_file"`
+		DownloadPosters  bool   `yaml:"download_posters"`
+		PosterFormat     string `yaml:"poster_format"`
+		FetchIMDb        bool   `yaml:"fetch_imdb"`
+	}
+	type videoSection struct {
+		Extensions       []string `yaml:"extensions"`
+		CleanupPatterns  []string `yaml:"cleanup_patterns"`
+		TechPatterns     []string `yaml:"tech_patterns"`
+		LanguagePatterns []string `yaml:"language_patterns"`
+	}
+	type youtubeSection struct {
+		YouTubeSourceDir string `yaml:"youtube_source_dir"`
+		YouTubeTargetDir string `yaml:"youtube_target_dir"`
+	}
+	return map[string]any{
+		"movie.yml": movieSection{
+			MovieFolder:      cfg.MovieFolder,
+			DirectoryFormat:  cfg.DirectoryFormat,
+			Recursive:        cfg.Recursive,
+			PreferSourceDir:  cfg.PreferSourceDir,
+			ArchiveMove:      cfg.ArchiveMove,
+			ConflictStrategy: cfg.ConflictStrategy,
+			CreateRatingFile: cfg.CreateRatingFile,
+			CreateSIDFile:    cfg.CreateSIDFile,
+			DownloadPosters:  cfg.DownloadPosters,
+			PosterFormat:     cfg.PosterFormat,
+			FetchIMDb:        cfg.FetchIMDb,
+		},
+		"video.yml": videoSection{
+			Extensions:       cfg.Extensions,
+			CleanupPatterns:  cfg.CleanupPatterns,
+			TechPatterns:     cfg.TechPatterns,
+			LanguagePatterns: cfg.LanguagePatterns,
+		},
+		"youtube.yml": youtubeSection{
+			YouTubeSourceDir: cfg.YouTubeSourceDir,
+			YouTubeTargetDir: cfg.YouTubeTargetDir,
+		},
+	}
+}
+
+func fileHeaders() map[string]string {
+	return map[string]string{
+		"movie.yml":   "# Cine Sort 电影配置 — 由「设置 · 电影」页生成，也可手工编辑\n# 目录名模板可用变量：{chinese_title} / {english_title} / {year}\n\n",
+		"video.yml":   "# Cine Sort 视频配置 — 由「设置 · 视频」页生成，也可手工编辑\n\n",
+		"youtube.yml": "# Cine Sort YouTube 配置 — 由「设置 · YouTube」页生成，也可手工编辑\n\n",
+	}
+}
+
+// Load reads the per-domain config files under configs/. Missing keys keep
+// their embedded default values; if none of the files exist, they are created
+// from the defaults (or migrated from a legacy config.yml) on first run.
 func Load() (*AppConfig, error) {
 	cfg, err := Defaults()
 	if err != nil {
@@ -78,55 +145,80 @@ func Load() (*AppConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	path := filepath.Join(dir, "config.yml")
-	cfg.ConfigPath = path
+	cdir, err := ConfigsDir()
+	if err != nil {
+		return nil, err
+	}
+	cfg.ConfigPath = cdir
 	cfg.DataDir = dir
 
-	data, err := os.ReadFile(path)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, fmt.Errorf("read config: %w", err)
+	files := configSections(&cfg)
+	loaded := false
+	for name := range files {
+		data, err := os.ReadFile(filepath.Join(cdir, name))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return nil, fmt.Errorf("read config %s: %w", name, err)
+			}
+			continue
 		}
-		if err := Save(&cfg); err != nil {
-			return nil, err
+		loaded = true
+		if err := yaml.Unmarshal(data, &cfg); err != nil {
+			return nil, fmt.Errorf("parse config %s: %w", name, err)
 		}
-		return &cfg, nil
 	}
 
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("parse config %s: %w", path, err)
+	// No configs/ files yet: migrate a legacy config.yml, or write defaults.
+	if !loaded {
+		legacy, err := os.ReadFile(filepath.Join(dir, "config.yml"))
+		switch {
+		case err == nil:
+			if err := yaml.Unmarshal(legacy, &cfg); err != nil {
+				return nil, fmt.Errorf("parse legacy config.yml: %w", err)
+			}
+		case os.IsNotExist(err):
+			if err := Save(&cfg); err != nil {
+				return nil, err
+			}
+			return &cfg, nil
+		default:
+			return nil, fmt.Errorf("read legacy config.yml: %w", err)
+		}
 	}
+
 	// Resolved fields are never taken from user input.
-	cfg.ConfigPath = path
+	cfg.ConfigPath = cdir
 	cfg.DataDir = dir
 	cfg.normalize()
 	return &cfg, nil
 }
 
-// Save persists the configuration. It creates the directory when needed.
+// Save persists the configuration as per-domain files under configs/,
+// creating the directory when needed. A legacy config.yml is left untouched.
 func Save(cfg *AppConfig) error {
-	dir, err := Dir()
+	cdir, err := ConfigsDir()
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(cdir, 0o755); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
 	cfg.normalize()
 
-	type persisted AppConfig
-	out, err := yaml.Marshal((*persisted)(cfg))
-	if err != nil {
-		return fmt.Errorf("marshal config: %w", err)
+	files := configSections(cfg)
+	headers := fileHeaders()
+	for name, section := range files {
+		out, err := yaml.Marshal(section)
+		if err != nil {
+			return fmt.Errorf("marshal %s: %w", name, err)
+		}
+		path := filepath.Join(cdir, name)
+		if err := os.WriteFile(path, append([]byte(headers[name]), out...), 0o644); err != nil {
+			return fmt.Errorf("write config %s: %w", name, err)
+		}
 	}
-	header := "# Cine Sort 配置 — 由「设置」页生成，也可手工编辑\n" +
-		"# 目录名模板可用变量：{chinese_title} / {english_title} / {year}\n\n"
-	path := filepath.Join(dir, "config.yml")
-	if err := os.WriteFile(path, append([]byte(header), out...), 0o644); err != nil {
-		return fmt.Errorf("write config: %w", err)
-	}
-	cfg.ConfigPath = path
-	cfg.DataDir = dir
+	cfg.ConfigPath = cdir
+	cfg.DataDir, _ = Dir()
 	return nil
 }
 

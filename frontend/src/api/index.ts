@@ -5,6 +5,7 @@ import type {
   CacheSummary,
   HistoryStats,
   LogEntry,
+  MediaFileMeta,
   LogLevel,
   MovieDetail,
   MovieFileInfo,
@@ -61,6 +62,12 @@ export const api = {
   getCacheEntry: (key: string) => invoke<CacheEntry>('GetCacheEntry', key),
   getCacheStats: () => invoke<CacheStats>('GetCacheStats'),
   clearCache: () => invoke<void>('ClearCache'),
+  scanMediaFiles: (dir: string, recursive: boolean) =>
+    invoke<MediaFileMeta[]>('ScanMediaFiles', dir, recursive),
+  updateMediaTags: (path: string, title: string, comment: string) =>
+    invoke<void>('UpdateMediaTags', path, title, comment),
+  startMediaRename: (dir: string, recursive: boolean) =>
+    invoke<void>('StartMediaRename', dir, recursive),
 }
 
 type Unsubscribe = () => void

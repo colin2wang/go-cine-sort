@@ -394,6 +394,39 @@ export namespace model {
 
 }
 
+export namespace service {
+	
+	export class MediaFileMeta {
+	    path: string;
+	    dir: string;
+	    filename: string;
+	    sizeMB: number;
+	    title: string;
+	    comment: string;
+	    newName: string;
+	    renamable: boolean;
+	    taggable: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new MediaFileMeta(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.dir = source["dir"];
+	        this.filename = source["filename"];
+	        this.sizeMB = source["sizeMB"];
+	        this.title = source["title"];
+	        this.comment = source["comment"];
+	        this.newName = source["newName"];
+	        this.renamable = source["renamable"];
+	        this.taggable = source["taggable"];
+	    }
+	}
+
+}
+
 export namespace youtube {
 	
 	export class MovePlan {

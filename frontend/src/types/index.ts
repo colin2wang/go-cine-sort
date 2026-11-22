@@ -178,6 +178,18 @@ export interface YouTubePlanResult {
   unmatched: string[]
 }
 
+export interface MediaFileMeta {
+  path: string
+  dir: string
+  filename: string
+  sizeMB: number
+  title: string
+  comment: string
+  newName: string
+  renamable: boolean
+  taggable: boolean
+}
+
 export const EVENT = {
   log: 'log',
   progress: 'progress',

@@ -7,36 +7,71 @@ const props = defineProps<{ collapsed: boolean }>()
 const emit = defineEmits<{ toggle: [] }>()
 const route = useRoute()
 
-const items = [
+const groups = [
   {
-    path: '/workbench',
-    label: '批量整理',
-    icon: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+    label: '电影',
+    items: [
+      {
+        path: '/workbench',
+        label: '批量整理',
+        icon: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
+      },
+      {
+        path: '/single',
+        label: '指定整理',
+        icon: 'M3 4h18v16H3zM7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4',
+      },
+      {
+        path: '/history',
+        label: '历史记录',
+        icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',
+      },
+      {
+        path: '/cache',
+        label: '响应缓存',
+        icon: 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+      },
+    ],
   },
   {
-    path: '/single',
-    label: '单部处理',
-    icon: 'M3 4h18v16H3zM7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4',
+    label: '视频',
+    items: [
+      {
+        path: '/tidy',
+        label: '批量整理',
+        icon: 'M4 4h16v16H4zM8 4v16M16 4v16M4 9h4M4 15h4M16 9h4M16 15h4',
+      },
+    ],
   },
   {
-    path: '/youtube',
-    label: 'YouTube 归档',
-    icon: 'M10 8.5v7l6-3.5-6-3.5zM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z',
+    label: 'YouTube',
+    items: [
+      {
+        path: '/youtube',
+        label: '归档整理',
+        icon: 'M10 8.5v7l6-3.5-6-3.5zM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z',
+      },
+    ],
   },
   {
-    path: '/history',
-    label: '历史记录',
-    icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',
-  },
-  {
-    path: '/cache',
-    label: '响应缓存',
-    icon: 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
-  },
-  {
-    path: '/settings',
     label: '设置',
-    icon: 'M4 7h16M4 12h16M4 17h16M9 5v4M15 10v4M8 15v4',
+    items: [
+      {
+        path: '/settings/movie',
+        label: '电影',
+        icon: 'M4 7h16M4 12h16M4 17h16M9 5v4M15 10v4M8 15v4',
+      },
+      {
+        path: '/settings/video',
+        label: '视频',
+        icon: 'M4 7h16M4 12h16M4 17h16M9 5v4M15 10v4M8 15v4',
+      },
+      {
+        path: '/settings/youtube',
+        label: 'YouTube',
+        icon: 'M4 7h16M4 12h16M4 17h16M9 5v4M15 10v4M8 15v4',
+      },
+    ],
   },
 ]
 
@@ -54,22 +89,24 @@ const activePath = computed(() => route.path)
     </div>
 
     <nav class="nav">
-      <div v-if="!props.collapsed" class="nav-caption">工作区</div>
-      <RouterLink
-        v-for="item in items"
-        :key="item.path"
-        :to="item.path"
-        class="nav-item"
-        :class="{ active: activePath === item.path }"
-        :title="item.label"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-          stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
-          <path :d="item.icon" />
-        </svg>
-        <span v-if="!props.collapsed" class="nav-label">{{ item.label }}</span>
-        <span v-if="activePath === item.path" class="nav-marker" />
-      </RouterLink>
+      <div v-for="group in groups" :key="group.label" class="nav-group">
+        <div v-if="!props.collapsed" class="nav-caption">{{ group.label }}</div>
+        <RouterLink
+          v-for="item in group.items"
+          :key="item.path"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: activePath === item.path, child: group.label === '设置' }"
+          :title="item.label"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+            <path :d="item.icon" />
+          </svg>
+          <span v-if="!props.collapsed" class="nav-label">{{ item.label }}</span>
+          <span v-if="activePath === item.path" class="nav-marker" />
+        </RouterLink>
+      </div>
     </nav>
 
     <div class="sidebar-foot">
@@ -134,6 +171,18 @@ const activePath = computed(() => route.path)
   flex-direction: column;
   gap: 5px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.nav-group:last-child {
+  margin-bottom: 0;
 }
 .nav-caption {
   font-size: 10px;
@@ -141,6 +190,15 @@ const activePath = computed(() => route.path)
   letter-spacing: 1.4px;
   padding: 8px 12px 6px;
   text-transform: uppercase;
+}
+.nav-item.child {
+  height: 36px;
+  font-size: 12.5px;
+  padding-left: 14px;
+}
+.nav-item.child .nav-icon {
+  width: 16px;
+  height: 16px;
 }
 .nav-item {
   position: relative;

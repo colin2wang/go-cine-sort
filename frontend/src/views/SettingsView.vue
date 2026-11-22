@@ -5,6 +5,15 @@ import logoUrl from '@/assets/logo.svg'
 import { notify, reportError } from '@/store/toast'
 import type { AppConfig } from '@/types'
 
+const props = defineProps<{ section: 'movie' | 'video' | 'youtube' }>()
+
+
+const SECTION_META: Record<typeof props.section, { title: string; subtitle: string }> = {
+  movie: { title: '设置 · 电影', subtitle: '目录、命名模板与整理行为的全局配置' },
+  video: { title: '设置 · 视频', subtitle: '视频扫描扩展名与文件名清洗规则' },
+  youtube: { title: '设置 · YouTube', subtitle: 'YouTube 归档整理的源目录与目标目录' },
+}
+
 const cfg = ref<AppConfig | null>(null)
 const saving = ref(false)
 const showRules = ref(false)
@@ -105,8 +114,8 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
   <div class="page-body fade-in-up">
     <div class="page-head">
       <div>
-        <h1 class="page-title">设置</h1>
-        <p class="page-subtitle">目录、命名模板与整理行为的全局配置</p>
+        <h1 class="page-title">{{ SECTION_META[props.section].title }}</h1>
+        <p class="page-subtitle">{{ SECTION_META[props.section].subtitle }}</p>
       </div>
       <span class="badge-soft">YAML · 用户配置目录</span>
     </div>
@@ -115,14 +124,14 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
       <section class="glass-card card-pad notice">
         <div class="notice-icon">i</div>
         <div>
-          <div class="notice-title">配置持久化位置</div>
+          <div class="notice-title">配置持久化目录（configs）</div>
           <div class="mono notice-path">{{ cfg.configPath }}</div>
-          <div class="field-hint">也可直接编辑该文件；修改后重启应用或在此页保存即可生效。</div>
+          <div class="field-hint">电影 / 视频 / YouTube 分别存为该目录下的 movie.yml、video.yml、youtube.yml，也可直接编辑；修改后重启应用或在此页保存即可生效。</div>
         </div>
         <button class="btn btn-ghost btn-sm" type="button" @click="restore">恢复默认</button>
       </section>
 
-      <section class="glass-card card-pad">
+      <section v-if="props.section === 'movie'" class="glass-card card-pad">
         <h2 class="section-title" style="margin-bottom: 18px">路径与命名</h2>
         <div class="field">
           <span class="field-label">电影目录</span>
@@ -131,23 +140,6 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
             <button class="btn" type="button" @click="chooseDir">浏览…</button>
           </div>
           <span class="field-hint">整理目录与归档后的视频文件都会生成在此路径下；留空或目录不存在且无源文件时，回退到程序目录下的 downloads。</span>
-        </div>
-        <div class="divider" style="margin: 18px 0" />
-        <div class="field">
-          <span class="field-label">YouTube 归档源目录</span>
-          <div class="input-group">
-            <input v-model="cfg.youtubeSourceDir" class="input" placeholder="待整理的 YouTube 文件所在目录…" spellcheck="false" />
-            <button class="btn" type="button" @click="chooseYouTubeSourceDir">浏览…</button>
-          </div>
-          <span class="field-hint">「YouTube 归档」页默认从这里扫描按 “上传者 - 标题” 命名的文件。</span>
-        </div>
-        <div class="field" style="margin-top: 14px">
-          <span class="field-label">YouTube 归档目标目录</span>
-          <div class="input-group">
-            <input v-model="cfg.youtubeTargetDir" class="input" placeholder="按上传者分类存放的根目录…" spellcheck="false" />
-            <button class="btn" type="button" @click="chooseYouTubeTargetDir">浏览…</button>
-          </div>
-          <span class="field-hint">文件会被移动到该目录下以上传者命名的子文件夹。</span>
         </div>
         <div class="divider" style="margin: 18px 0" />
         <div class="field">
@@ -165,10 +157,30 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
         </div>
       </section>
 
-      <div class="grid-2">
+      <section v-if="props.section === 'youtube'" class="glass-card card-pad">
+        <h2 class="section-title" style="margin-bottom: 18px">YouTube 归档目录</h2>
+        <div class="field">
+          <span class="field-label">YouTube 归档源目录</span>
+          <div class="input-group">
+            <input v-model="cfg.youtubeSourceDir" class="input" placeholder="待整理的 YouTube 文件所在目录…" spellcheck="false" />
+            <button class="btn" type="button" @click="chooseYouTubeSourceDir">浏览…</button>
+          </div>
+          <span class="field-hint">「YouTube 归档整理」页默认从这里扫描按 “上传者 - 标题” 命名的文件。</span>
+        </div>
+        <div class="field" style="margin-top: 14px">
+          <span class="field-label">YouTube 归档目标目录</span>
+          <div class="input-group">
+            <input v-model="cfg.youtubeTargetDir" class="input" placeholder="按上传者分类存放的根目录…" spellcheck="false" />
+            <button class="btn" type="button" @click="chooseYouTubeTargetDir">浏览…</button>
+          </div>
+          <span class="field-hint">文件会被移动到该目录下以上传者命名的子文件夹。</span>
+        </div>
+      </section>
+
+      <div v-if="props.section === 'movie'" class="grid-2">
         <section class="glass-card card-pad">
           <h2 class="section-title" style="margin-bottom: 6px">整理行为</h2>
-          <p class="field-hint" style="margin-bottom: 16px">这些开关同时影响批量整理与 SID 单部处理。</p>
+          <p class="field-hint" style="margin-bottom: 16px">这些开关同时影响电影批量整理与电影指定整理。</p>
           <div class="flag-list">
             <div v-for="f in boolFlags" :key="f.key" class="flag-row">
               <div>
@@ -217,23 +229,24 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
             <span class="dot" />
             {{ cfg.archiveMove ? '归档移动已开启，请确认目标磁盘空间充足' : '归档移动已关闭，仅生成目录与元数据文件' }}
           </div>
-
-          <div class="divider" style="margin: 20px 0 16px" />
-          <h2 class="section-title" style="margin-bottom: 12px">扫描规则</h2>
-          <div class="ext-chips">
-            <span v-for="ext in cfg.extensions" :key="ext" class="ext-chip mono">{{ ext }}</span>
-          </div>
-          <button class="link-more" type="button" @click="showRules = !showRules">
-            {{ showRules ? '收起清洗规则' : `查看 ${cfg.cleanupPatterns.length + cfg.techPatterns.length + cfg.languagePatterns.length} 条清洗规则` }} →
-          </button>
-          <div v-if="showRules" class="rule-box">
-            <div v-for="g in ruleGroups" :key="g.label" class="rule-group">
-              <div class="rule-label">{{ g.label }}（{{ g.items.length }}）</div>
-              <div v-for="(item, i) in g.items" :key="i" class="rule-item mono">{{ item }}</div>
-            </div>
-          </div>
         </section>
       </div>
+
+      <section v-if="props.section === 'video'" class="glass-card card-pad">
+        <h2 class="section-title" style="margin-bottom: 12px">扫描规则</h2>
+        <div class="ext-chips">
+          <span v-for="ext in cfg.extensions" :key="ext" class="ext-chip mono">{{ ext }}</span>
+        </div>
+        <button class="link-more" type="button" @click="showRules = !showRules">
+          {{ showRules ? '收起清洗规则' : `查看 ${cfg.cleanupPatterns.length + cfg.techPatterns.length + cfg.languagePatterns.length} 条清洗规则` }} →
+        </button>
+        <div v-if="showRules" class="rule-box">
+          <div v-for="g in ruleGroups" :key="g.label" class="rule-group">
+            <div class="rule-label">{{ g.label }}（{{ g.items.length }}）</div>
+            <div v-for="(item, i) in g.items" :key="i" class="rule-item mono">{{ item }}</div>
+          </div>
+        </div>
+      </section>
 
       <section class="glass-card card-pad about-card">
         <img :src="logoUrl" alt="Cine Sort" class="about-logo" />

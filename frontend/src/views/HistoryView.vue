@@ -157,7 +157,7 @@ watch(keyword, () => {
               <td colspan="6">
                 <div class="empty-state">
                   <div class="empty-icon">◷</div>
-                  <div>{{ keyword ? '没有匹配的记录' : '暂无整理记录，先在「批量整理」中执行一次任务' }}</div>
+                  <div>{{ keyword ? '没有匹配的记录' : '暂无整理记录，先在「电影批量整理」中执行一次任务' }}</div>
                 </div>
               </td>
             </tr>

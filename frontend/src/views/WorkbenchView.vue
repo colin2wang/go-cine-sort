@@ -136,7 +136,7 @@ async function start() {
   }
   elapsed.value = 0
   beginTask(targets.length)
-  pushLocalLog('INFO', `开始批量整理，共 ${targets.length} 个文件`, 'ui')
+  pushLocalLog('INFO', `开始电影批量整理，共 ${targets.length} 个文件`, 'ui')
   try {
     await api.startBatch(dir.value, recursive.value, targets)
   } catch (e) {
@@ -167,7 +167,7 @@ async function openFolder(path: string) {
   <div class="page-body fade-in-up">
     <div class="page-head">
       <div>
-        <h1 class="page-title">批量整理</h1>
+        <h1 class="page-title">电影批量整理</h1>
         <p class="page-subtitle">扫描目录、抓取豆瓣元数据并生成规范化整理结构</p>
       </div>
       <span class="badge-soft">STEP 01 / 工作台</span>

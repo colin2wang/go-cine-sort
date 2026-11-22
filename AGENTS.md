@@ -17,8 +17,9 @@ Wails v2.17.1 Windows 桌面应用（Go 1.27 后端 + Vue 3.5/TS/pnpm 前端）�
 
 ## 项目特有注意事项
 
-- 配置、`cine_sort.db`、日志全部生成在**可执行程序同目录**（便携式，`config.Dir()` 基于 `os.Executable()`），不是 AppData；不要改回 `os.UserConfigDir()`。
-- 清洗规则嵌入 `internal/config/defaults.yml`（go:embed）；用户 config.yml 可覆盖。Go 用 RE2：`\b`、`\w` 只识别 ASCII，涉及中文片段的规则已改写为 Unicode 等价形式，不得照搬 Python 正则。
+- 数据库 `cine_sort.db`、日志生成在**可执行程序同目录**（便携式，`config.Dir()` 基于 `os.Executable()`），不是 AppData；不要改回 `os.UserConfigDir()`。
+- 配置拆分为 `configs/` 目录（exe 同目录）下的 `movie.yml`、`video.yml`、`youtube.yml`，`config.ConfigsDir()` 解析；`ConfigPath` 指向 configs 目录。首次运行自动生成；存在旧版单文件 `config.yml` 时自动迁移后写入三个文件（旧文件保留不删除）。
+- 清洗规则嵌入 `internal/config/defaults.yml`（go:embed）；configs 下的用户配置可覆盖。Go 用 RE2：`\b`、`\w` 只识别 ASCII，涉及中文片段的规则已改写为 Unicode 等价形式，不得照搬 Python 正则。
 - 新增配置字段需同步四处：`internal/config`（struct + defaults）、`frontend/src/types/index.ts`、`frontend/src/views/SettingsView.vue`（开关与 toggle 联合类型）、`frontend/wailsjs/go/models.ts`。
 - `ConfigPath`/`DataDir` 为运行时解析（`yaml:"-"`），永不信任前端传来的路径。
 - SQLite 用纯 Go 的 modernc.org/sqlite（无 CGO），Windows 可直接 `go build`。
