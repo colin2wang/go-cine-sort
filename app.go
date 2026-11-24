@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 
 	appbridge "go-cine-sort/internal/app"
 	"go-cine-sort/internal/cache"
@@ -24,18 +24,32 @@ import (
 // App is the object bound to the Wails frontend. It owns the application
 // lifetime and delegates all business logic to internal/service.
 type App struct {
-	ctx     context.Context
-	cfg     *config.AppConfig
-	log     *logging.Logger
-	svc     *service.Service
-	initErr error
+	ctx         context.Context
+	application *application.App
+	cfg         *config.AppConfig
+	log         *logging.Logger
+	svc         *service.Service
+	initErr     error
 }
 
 func NewApp() *App {
 	return &App{}
 }
 
-func (a *App) startup(ctx context.Context) {
+// SetApplication injects the wails application handle used for events and dialogs.
+func (a *App) SetApplication(app *application.App) {
+	a.application = app
+}
+
+// cancelRunningTask aborts a running pipeline task, e.g. when the window closes.
+func (a *App) cancelRunningTask() {
+	if a.svc != nil && a.svc.IsRunning() {
+		_ = a.svc.CancelTask()
+	}
+}
+
+// ServiceStartup is called by Wails when the service registers.
+func (a *App) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	a.ctx = ctx
 
 	cfg, err := config.Load()
@@ -45,7 +59,7 @@ func (a *App) startup(ctx context.Context) {
 		def, defErr := config.Defaults()
 		if defErr != nil {
 			a.initErr = defErr
-			return
+			return nil
 		}
 		def.ConfigPath, _ = config.Path()
 		def.DataDir, _ = config.Dir()
@@ -53,38 +67,27 @@ func (a *App) startup(ctx context.Context) {
 	}
 	a.cfg = cfg
 
-	log, err := logging.New(filepath.Join(cfg.DataDir, "logs"), appbridge.LogSink(ctx))
+	log, err := logging.New(filepath.Join(cfg.DataDir, "logs"), appbridge.LogSink(a.application))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "日志初始化失败: %v\n", err)
-		log, _ = logging.New("", appbridge.LogSink(ctx))
+		log, _ = logging.New("", appbridge.LogSink(a.application))
 	}
 	a.log = log
 
-	svc, err := service.New(a.cfg, log, appbridge.Events(ctx))
+	svc, err := service.New(a.cfg, log, appbridge.Events(a.application))
 	if err != nil {
 		a.initErr = fmt.Errorf("服务初始化失败: %w", err)
 		log.Error("app", "%v", a.initErr)
-		return
+		return nil
 	}
 	svc.SetContext(ctx)
 	a.svc = svc
 	log.Info("app", "Cine Sort 已启动，配置文件 %s", cfg.ConfigPath)
+	return nil
 }
 
-func (a *App) domReady(ctx context.Context) {
-	if a.log != nil {
-		a.log.Debug("app", "前端 DOM 就绪")
-	}
-}
-
-func (a *App) beforeClose(ctx context.Context) bool {
-	if a.svc != nil && a.svc.IsRunning() {
-		_ = a.svc.CancelTask()
-	}
-	return false
-}
-
-func (a *App) shutdown(ctx context.Context) {
+// ServiceShutdown is called by Wails on application exit.
+func (a *App) ServiceShutdown() {
 	if a.svc != nil {
 		_ = a.svc.Close()
 	}
@@ -158,10 +161,12 @@ func (a *App) SaveConfig(cfg config.AppConfig) (config.AppConfig, error) {
 
 // SelectDirectory opens a native folder picker.
 func (a *App) SelectDirectory(current string) (string, error) {
-	dir, err := wailsruntime.OpenDirectoryDialog(a.ctx, wailsruntime.OpenDialogOptions{
-		Title:            "选择电影目录",
-		DefaultDirectory: current,
-	})
+	dir, err := a.application.Dialog.OpenFile().
+		SetTitle("选择电影目录").
+		SetDirectory(current).
+		CanChooseDirectories(true).
+		CanChooseFiles(false).
+		PromptForSingleSelection()
 	if err != nil {
 		return "", err
 	}

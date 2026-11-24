@@ -1,21 +1,22 @@
 {
-  "$schema": "https://wails.io/schemas/config.v2.json",
+  "$schema": "https://wails.io/schemas/config.v3.json",
   "name": "go-cine-sort",
   "outputfilename": "cine-sort",
-  "frontend:install": "pnpm install",
-  "frontend:build": "pnpm run build",
-  "frontend:dev:install": "pnpm install",
-  "frontend:dev:watcher": "pnpm run dev",
-  "frontend:dev:serverUrl": "auto",
-  "author": {
-    "name": "Cine Sort",
-    "email": "cine-sort@localhost"
-  },
   "info": {
     "companyName": "Cine Sort",
     "productName": "Cine Sort",
     "productVersion": "1.0.0",
     "copyright": "Copyright © Cine Sort",
     "comments": "电影整理工作台"
+  },
+  "bindings": {
+    "output": "frontend/bindings"
+  },
+  "frontend": {
+    "dir": "./frontend",
+    "install": "pnpm install --frozen-lockfile",
+    "build": "pnpm run build",
+    "dev": "pnpm run dev",
+    "devServerUrl": "http://127.0.0.1:5173"
   }
 }

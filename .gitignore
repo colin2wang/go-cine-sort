@@ -3,11 +3,12 @@ build/bin/
 *.syso
 go-cine-sort.exe
 
+# Task runner local state
+.task/
+
 # Frontend
 frontend/node_modules/
 frontend/dist/
-frontend/.vite/
-frontend/package.json.md5
 
 # AI coder local state
 .codebuddy/

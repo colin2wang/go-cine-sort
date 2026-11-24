@@ -119,7 +119,7 @@ const activePath = computed(() => route.path)
         </svg>
         <span v-if="!props.collapsed">收起侧栏</span>
       </button>
-      <div v-if="!props.collapsed" class="version">v1.0.0 · Wails 2.17.1</div>
+      <div v-if="!props.collapsed" class="version">v1.0.0 · Wails 3.1.0</div>
     </div>
   </aside>
 </template>

@@ -252,7 +252,7 @@ function toggle(key: 'recursive' | 'preferSourceDir' | 'downloadPosters' | 'fetc
         <img :src="logoUrl" alt="Cine Sort" class="about-logo" />
         <div class="about-text">
           <div class="about-name">Cine Sort</div>
-          <div class="field-hint">电影整理工作台 · Wails 2.17.1 + Vue 3 + TypeScript</div>
+          <div class="field-hint">电影整理工作台 · Wails 3.1.0 + Vue 3 + TypeScript</div>
         </div>
         <div class="grow" />
         <span class="dim mono" style="font-size: 11px; margin-right: 16px">v1.0.0</span>

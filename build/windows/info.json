@@ -1,15 +1,17 @@
 {
-  "fixed": {
-    "file_version": "{{.Info.ProductVersion}}"
-  },
-  "info": {
-    "0000": {
-      "ProductVersion": "{{.Info.ProductVersion}}",
-      "CompanyName": "{{.Info.CompanyName}}",
-      "FileDescription": "{{.Info.ProductName}}",
-      "LegalCopyright": "{{.Info.Copyright}}",
-      "ProductName": "{{.Info.ProductName}}",
-      "Comments": "{{.Info.Comments}}"
-    }
-  }
+	"fixed": {
+		"file_version": "1.0.0",
+		"product_version": "1.0.0"
+	},
+	"info": {
+		"0409": {
+			"FileVersion": "1.0.0",
+			"ProductVersion": "1.0.0",
+			"CompanyName": "Cine Sort",
+			"FileDescription": "电影整理工作台",
+			"LegalCopyright": "Copyright © Cine Sort",
+			"ProductName": "Cine Sort",
+			"Comments": "This is a comment"
+		}
+	}
 }

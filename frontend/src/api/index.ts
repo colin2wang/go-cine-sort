@@ -1,3 +1,31 @@
+import { Events } from '@wailsio/runtime'
+import {
+  CancelTask,
+  ClearCache,
+  GetCacheEntry,
+  GetCacheStats,
+  GetConfig,
+  GetDefaults,
+  GetHistoryDetail,
+  GetHistoryStats,
+  IsRunning,
+  ListCache,
+  ListDirectory,
+  ListHistory,
+  OpenFolder,
+  Ping,
+  PlanYouTubeSort,
+  ProcessBySID,
+  SaveConfig,
+  ScanDirectory,
+  ScanMediaFiles,
+  SelectDirectory,
+  SetLogLevel,
+  StartBatch,
+  StartMediaRename,
+  StartYouTubeSort,
+  UpdateMediaTags,
+} from '../../bindings/go-cine-sort/app'
 import type {
   AppConfig,
   CacheEntry,
@@ -17,72 +45,60 @@ import type {
   YouTubePlanResult,
 } from '@/types'
 
-type BindingFn = (...args: any[]) => Promise<any>
-
-function bindings(): Record<string, BindingFn> {
-  const app = window.go?.main?.App
-  if (!app) {
-    throw new Error('Wails 运行时未就绪，请在桌面窗口中打开本应用')
-  }
-  return app
-}
-
-async function invoke<T>(method: string, ...args: any[]): Promise<T> {
-  const fn = bindings()[method]
-  if (typeof fn !== 'function') {
-    throw new Error(`后端方法 ${method} 不可用，请重新构建应用`)
-  }
-  return (await fn(...args)) as T
-}
-
 export const api = {
-  ping: () => invoke<string>('Ping'),
-  getConfig: () => invoke<AppConfig>('GetConfig'),
-  saveConfig: (config: AppConfig) => invoke<AppConfig>('SaveConfig', config),
-  selectDirectory: (current: string) => invoke<string>('SelectDirectory', current),
+  ping: () => Ping() as Promise<string>,
+  getConfig: () => GetConfig() as Promise<AppConfig>,
+  // 生成的绑定把 DataDir（运行时解析的 yaml:"-" 字段）推成必填 string，
+  // 与手写契约的可选类型不兼容，此处显式转换。
+  saveConfig: (config: AppConfig) =>
+    SaveConfig(config as unknown as Parameters<typeof SaveConfig>[0]) as Promise<AppConfig>,
+  selectDirectory: (current: string) => SelectDirectory(current) as Promise<string>,
   scanDirectory: (dir: string, recursive: boolean) =>
-    invoke<MovieFileInfo[]>('ScanDirectory', dir, recursive),
+    ScanDirectory(dir, recursive) as Promise<MovieFileInfo[]>,
   startBatch: (dir: string, recursive: boolean, filePaths: string[]) =>
-    invoke<void>('StartBatch', dir, recursive, filePaths),
-  processBySID: (sid: string) => invoke<ProcessResult>('ProcessBySID', sid),
-  cancelTask: () => invoke<boolean>('CancelTask'),
-  listHistory: (keyword: string) => invoke<MovieRecord[]>('ListHistory', keyword),
-  getHistoryDetail: (sid: string) => invoke<MovieDetail>('GetHistoryDetail', sid),
-  getHistoryStats: () => invoke<HistoryStats>('GetHistoryStats'),
-  openFolder: (path: string) => invoke<void>('OpenFolder', path),
-  getDefaults: () => invoke<AppConfig>('GetDefaults'),
-  isRunning: () => invoke<boolean>('IsRunning'),
-  listDirectory: (dir: string) => invoke<string[]>('ListDirectory', dir),
-  setLogLevel: (level: LogLevel) => invoke<void>('SetLogLevel', level),
-  listCache: () => invoke<CacheSummary[]>('ListCache'),
+    StartBatch(dir, recursive, filePaths) as Promise<void>,
+  processBySID: (sid: string) => ProcessBySID(sid) as Promise<ProcessResult>,
+  cancelTask: () => CancelTask() as Promise<boolean>,
+  listHistory: (keyword: string) => ListHistory(keyword) as Promise<MovieRecord[]>,
+  getHistoryDetail: (sid: string) => GetHistoryDetail(sid) as Promise<MovieDetail>,
+  getHistoryStats: () => GetHistoryStats() as Promise<HistoryStats>,
+  openFolder: (path: string) => OpenFolder(path) as Promise<void>,
+  getDefaults: () => GetDefaults() as Promise<AppConfig>,
+  isRunning: () => IsRunning() as Promise<boolean>,
+  listDirectory: (dir: string) => ListDirectory(dir) as Promise<string[]>,
+  setLogLevel: (level: LogLevel) => SetLogLevel(level) as Promise<void>,
+  listCache: () => ListCache() as Promise<CacheSummary[]>,
   planYouTubeSort: (sourceDir: string, targetBase: string) =>
-    invoke<YouTubePlanResult>('PlanYouTubeSort', sourceDir, targetBase),
+    PlanYouTubeSort(sourceDir, targetBase) as Promise<YouTubePlanResult>,
   startYouTubeSort: (sourceDir: string, targetBase: string, conflictAction: YouTubeConflictAction) =>
-    invoke<void>('StartYouTubeSort', sourceDir, targetBase, conflictAction),
-  getCacheEntry: (key: string) => invoke<CacheEntry>('GetCacheEntry', key),
-  getCacheStats: () => invoke<CacheStats>('GetCacheStats'),
-  clearCache: () => invoke<void>('ClearCache'),
+    StartYouTubeSort(sourceDir, targetBase, conflictAction) as Promise<void>,
+  getCacheEntry: (key: string) => GetCacheEntry(key) as Promise<CacheEntry>,
+  getCacheStats: () => GetCacheStats() as Promise<CacheStats>,
+  clearCache: () => ClearCache() as Promise<void>,
   scanMediaFiles: (dir: string, recursive: boolean) =>
-    invoke<MediaFileMeta[]>('ScanMediaFiles', dir, recursive),
+    ScanMediaFiles(dir, recursive) as Promise<MediaFileMeta[]>,
   updateMediaTags: (path: string, title: string, comment: string) =>
-    invoke<void>('UpdateMediaTags', path, title, comment),
+    UpdateMediaTags(path, title, comment) as Promise<void>,
   startMediaRename: (dir: string, recursive: boolean) =>
-    invoke<void>('StartMediaRename', dir, recursive),
+    StartMediaRename(dir, recursive) as Promise<void>,
 }
 
 type Unsubscribe = () => void
 
-/** 订阅 Wails 事件。约定每个事件携带一个 payload 对象。 */
+/**
+ * 订阅 Wails 事件。约定每个事件携带一个 payload 对象。
+ * v3 的 Events.On 回调收到事件对象，payload 在 data 字段中；
+ * 若运行时直接给出 payload（老版本行为），也一并兼容。
+ */
 export function on<T>(eventName: string, handler: (payload: T) => void): Unsubscribe {
-  const rt = window.runtime
-  if (!rt) return () => {}
-  return rt.EventsOn(eventName, (...data: any[]) => {
-    if (data.length > 0) handler(data[0] as T)
+  return Events.On(eventName, (event: unknown) => {
+    const data = (event as { data?: unknown })?.data
+    if (data !== undefined) {
+      handler(data as T)
+      return
+    }
+    handler(event as T)
   })
-}
-
-export function off(eventName: string, ...additionalEventNames: string[]): void {
-  window.runtime?.EventsOff(eventName, ...additionalEventNames)
 }
 
 export const onLog = (h: (p: LogEntry) => void) => on<LogEntry>('log', h)

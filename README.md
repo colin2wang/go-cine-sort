@@ -1,6 +1,6 @@
 # Cine Sort · Movie Organizer
 
-![Wails](https://img.shields.io/badge/Wails-v2-red?logo=wails&logoColor=white) ![Go](https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go&logoColor=white) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vuedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-1.62-003B57?logo=sqlite&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white) ![pnpm](https://img.shields.io/badge/pnpm-12.18-F69220?logo=pnpm&logoColor=white)
+![Wails](https://img.shields.io/badge/Wails-v3-red?logo=wails&logoColor=white) ![Go](https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go&logoColor=white) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vuedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-1.62-003B57?logo=sqlite&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white) ![pnpm](https://img.shields.io/badge/pnpm-12.18-F69220?logo=pnpm&logoColor=white)
 
 Cine Sort is a desktop movie library organizer. Pick a movie folder and the app automatically detects video files, fetches film metadata online, generates a normalized directory layout with metadata files, downloads official posters, records everything in a SQLite history database, and optionally archives the source videos into the organized directory.
 
@@ -8,7 +8,7 @@ Cine Sort is a desktop movie library organizer. Pick a movie folder and the app 
 
 | Layer | Choice |
 | --- | --- |
-| Desktop framework | Wails **2.17.1** |
+| Desktop framework | Wails **3.1.0** |
 | Backend | Go 1.26+, stdlib `net/http` + `regexp`, `gopkg.in/yaml.v3`, `modernc.org/sqlite` (pure Go, no CGO) |
 | Frontend | Vue 3 + TypeScript + Vite + vue-router, **pnpm** |
 | Icons | `oksvg` + `rasterx` renders a single SVG → PNG/ICO |
@@ -17,7 +17,7 @@ Cine Sort is a desktop movie library organizer. Pick a movie folder and the app 
 
 ```powershell
 # Dev mode (hot reload)
-wails dev
+wails3 dev
 
 # Generate icons (standalone step)
 .\generate-icon.ps1
@@ -26,7 +26,7 @@ wails dev
 .\build.ps1
 ```
 
-`build.ps1` runs in order: verifies `go` / `node` / `pnpm` and the Wails CLI version (auto `go install ...@v2.17.1` if missing) → generates icons → `pnpm install --frozen-lockfile` → `pnpm run build` → `wails build -clean -s`. Output:
+`build.ps1` runs in order: verifies `go` / `node` / `pnpm` and the Wails CLI version (auto `go install ...@v3.1.0` if missing) → generates icons → `pnpm install --frozen-lockfile` → `pnpm run build` → `wails3 build`. Output:
 
 ```
 build/bin/cine-sort.exe

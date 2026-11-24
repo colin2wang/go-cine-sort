@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Cine Sort
+Comment=电影整理工作台
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/cine-sort %u
+Terminal=false
+Type=Application
+Icon=cine-sort
+Categories=Utility;
+StartupWMClass=cine-sort
+
+ 

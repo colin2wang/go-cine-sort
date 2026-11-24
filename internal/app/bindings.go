@@ -3,9 +3,7 @@
 package app
 
 import (
-	"context"
-
-	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 
 	"go-cine-sort/internal/logging"
 	"go-cine-sort/internal/model"
@@ -26,20 +24,20 @@ type TaskError struct {
 }
 
 // Events returns the callbacks used by the service pipeline.
-func Events(ctx context.Context) service.Events {
+func Events(app *application.App) service.Events {
 	return service.Events{
-		Progress: func(p model.TaskProgress) { wailsruntime.EventsEmit(ctx, EventProgress, p) },
-		Item:     func(r model.ProcessResult) { wailsruntime.EventsEmit(ctx, EventItem, r) },
-		Done:     func(s model.TaskSummary) { wailsruntime.EventsEmit(ctx, EventTaskDone, s) },
+		Progress: func(p model.TaskProgress) { app.Event.Emit(EventProgress, p) },
+		Item:     func(r model.ProcessResult) { app.Event.Emit(EventItem, r) },
+		Done:     func(s model.TaskSummary) { app.Event.Emit(EventTaskDone, s) },
 		Error: func(message string) {
-			wailsruntime.EventsEmit(ctx, EventTaskError, TaskError{Message: message})
+			app.Event.Emit(EventTaskError, TaskError{Message: message})
 		},
 	}
 }
 
 // LogSink forwards every leveled log entry to the frontend log console.
-func LogSink(ctx context.Context) func(logging.Entry) {
+func LogSink(app *application.App) func(logging.Entry) {
 	return func(entry logging.Entry) {
-		wailsruntime.EventsEmit(ctx, EventLog, entry)
+		app.Event.Emit(EventLog, entry)
 	}
 }

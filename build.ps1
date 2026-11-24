@@ -3,10 +3,10 @@
     Build Cine Sort into a single portable Windows executable.
 .DESCRIPTION
     Pipeline:
-      1. Verify go / node / pnpm toolchain and Wails CLI v2.17.1
+      1. Verify go / node / pnpm toolchain and Wails CLI v3.1.0
          (installs the CLI with `go install` when missing).
       2. Install frontend dependencies and build Vue/TS assets with pnpm.
-      3. Run `wails build -clean -s` to produce build/bin/cine-sort.exe.
+      3. Run `wails3 build` to produce build/bin/cine-sort.exe.
 
     No NSIS installer and no zip archive are produced - the deliverable is
     the single exe. Icons are generated separately by generate-icon.ps1.
@@ -28,8 +28,8 @@ $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 
 $Root = $PSScriptRoot
-$WailsVersion = 'v2.17.1'
-$VersionTag = '2\.17\.1'
+$WailsVersion = 'v3.1.0'
+$VersionTag = '3\.1\.0'
 $OutputExe = Join-Path $Root 'build/bin/cine-sort.exe'
 
 function Write-Step([string]$Message) {
@@ -44,26 +44,33 @@ function Assert-Exit([string]$Name) {
         Stop-WithError "$Name failed (exit code $LASTEXITCODE)" $LASTEXITCODE
     }
 }
+function Get-WailsCliVersion([string]$Path) {
+    # wails3 prints its version to stderr; PS 5.1 turns `2>&1` of a native
+    # command into NativeCommandError records under Stop preference. Route the
+    # merge through cmd.exe so PowerShell only ever sees clean stdout.
+    return (& cmd /c "`"$Path`" version 2>&1" | Out-String)
+}
+
 function Resolve-WailsCli {
-    $fromPath = Get-Command wails -ErrorAction SilentlyContinue
+    $fromPath = Get-Command wails3 -ErrorAction SilentlyContinue
     if ($fromPath) {
-        $ver = (& $fromPath.Source version 2>&1 | Out-String)
+        $ver = Get-WailsCliVersion $fromPath.Source
         if ($ver -match $VersionTag) { return $fromPath.Source }
         Write-Host "[build] PATH has an unexpected Wails version, installing $WailsVersion instead." -ForegroundColor Yellow
     }
 
     $goPath = (& go env GOPATH).Trim()
-    $localCli = Join-Path $goPath 'bin/wails.exe'
+    $localCli = Join-Path $goPath 'bin/wails3.exe'
     if (Test-Path -LiteralPath $localCli) {
-        $ver = (& $localCli version 2>&1 | Out-String)
+        $ver = Get-WailsCliVersion $localCli
         if ($ver -match $VersionTag) { return $localCli }
     }
 
     Write-Step "Installing Wails CLI $WailsVersion ..."
-    & go install "github.com/wailsapp/wails/v2/cmd/wails@$WailsVersion"
-    Assert-Exit 'go install wails'
+    & go install "github.com/wailsapp/wails/v3/cmd/wails3@$WailsVersion"
+    Assert-Exit 'go install wails3'
     if (-not (Test-Path -LiteralPath $localCli)) {
-        Stop-WithError "wails.exe not found after install: $localCli"
+        Stop-WithError "wails3.exe not found after install: $localCli"
     }
     return $localCli
 }
@@ -122,9 +129,9 @@ try {
 
     # ---------------------------------------------------------------- 5. wails build
     Set-Location -LiteralPath $Root
-    Write-Step 'Building single-file Windows executable (wails build -clean -s)'
-    & $wails build -clean -s
-    Assert-Exit 'wails build'
+    Write-Step 'Building single-file Windows executable (wails3 build)'
+    & $wails build
+    Assert-Exit 'wails3 build'
 
     if (-not (Test-Path -LiteralPath $OutputExe)) {
         Stop-WithError "Executable not found: $OutputExe"
