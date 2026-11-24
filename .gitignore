@@ -10,6 +10,9 @@ go-cine-sort.exe
 frontend/node_modules/
 frontend/dist/
 
+# Wails3
+frontend/bindings
+
 # AI coder local state
 .codebuddy/
 .atomcode/

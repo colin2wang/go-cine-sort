@@ -6,7 +6,8 @@
       1. Verify go / node / pnpm toolchain and Wails CLI v3.1.0
          (installs the CLI with `go install` when missing).
       2. Install frontend dependencies and build Vue/TS assets with pnpm.
-      3. Run `wails3 build` to produce build/bin/cine-sort.exe.
+      3. Run `wails3 generate bindings` to refresh frontend/bindings.
+      4. Run `wails3 build` to produce build/bin/cine-sort.exe.
 
     No NSIS installer and no zip archive are produced - the deliverable is
     the single exe. Icons are generated separately by generate-icon.ps1.
@@ -108,7 +109,15 @@ try {
         }
     }
 
-    # ---------------------------------------------------------------- 4. frontend
+    # ---------------------------------------------------------------- 4. bindings
+    # Regenerate frontend/bindings so the TS build always sees up-to-date
+    # Go binding modules.
+    Set-Location -LiteralPath $Root
+    Write-Step 'Generating Wails bindings (wails3 generate bindings)'
+    & $wails generate bindings -ts
+    Assert-Exit 'wails3 generate bindings'
+
+    # ---------------------------------------------------------------- 5. frontend
     Set-Location -LiteralPath (Join-Path $Root 'frontend')
     if ($SkipInstall) {
         Write-Step 'Skipping pnpm install (-SkipInstall)'
@@ -127,7 +136,7 @@ try {
         Stop-WithError 'frontend/dist/index.html was not produced'
     }
 
-    # ---------------------------------------------------------------- 5. wails build
+    # ---------------------------------------------------------------- 6. wails build
     Set-Location -LiteralPath $Root
     Write-Step 'Building single-file Windows executable (wails3 build)'
     & $wails build
